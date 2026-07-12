@@ -186,6 +186,10 @@ resource "aws_instance" "relay" {
 
   depends_on = [aws_route_table_association.public]
   tags       = { Name = var.name }
+
+  lifecycle {
+    ignore_changes = [user_data]
+  }
 }
 
 resource "aws_eip_association" "relay" {
