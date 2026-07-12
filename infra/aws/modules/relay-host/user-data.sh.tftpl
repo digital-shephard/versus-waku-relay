@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install -y ca-certificates curl docker.io docker-compose-v2 git awscli nodejs npm
+systemctl enable --now docker amazon-ssm-agent
+
+install -d -m 0755 /opt/versus-waku-relay /var/lib/versus-waku /var/lib/versus-waku-caddy/data /var/lib/versus-waku-caddy/config
+
+if [[ ! -d /opt/versus-waku-relay/.git ]]; then
+  git clone "${repository_url}" /opt/versus-waku-relay
+fi
+git -C /opt/versus-waku-relay fetch --tags --force origin
+git -C /opt/versus-waku-relay checkout --detach "${repository_ref}"
+
+node_key=""
+for attempt in $(seq 1 30); do
+  node_key=$(aws ssm get-parameter \
+    --region "${region}" \
+    --name "${node_key_parameter_name}" \
+    --with-decryption \
+    --query Parameter.Value \
+    --output text 2>/dev/null || true)
+  [[ "$node_key" =~ ^[0-9a-fA-F]{64}$ ]] && break
+  sleep 10
+done
+
+if [[ ! "$node_key" =~ ^[0-9a-fA-F]{64}$ ]]; then
+  echo "Node key was not available or was not 32-byte hex" >&2
+  exit 1
+fi
+
+cat > /opt/versus-waku-relay/.env <<EOF
+NWAKU_IMAGE=wakuorg/nwaku:v0.38.1
+CADDY_IMAGE=caddy:2.10.2-alpine
+PUBLIC_DOMAIN=${domain}
+PUBLIC_IP=${public_ip}
+VERSUS_WAKU_NODE_KEY=$node_key
+VERSUS_WAKU_STATIC_PEER=${static_peer}
+VERSUS_WAKU_CLUSTER_ID=66
+VERSUS_WAKU_NUM_SHARDS=8
+VERSUS_WAKU_STORE_SECONDS=${store_seconds}
+VERSUS_WAKU_STORE_CAPACITY=${store_capacity}
+VERSUS_WAKU_STORE_SIZE=${store_size}
+VERSUS_WAKU_DATA_DIR=/var/lib/versus-waku
+CADDY_DATA_DIR=/var/lib/versus-waku-caddy/data
+CADDY_CONFIG_DIR=/var/lib/versus-waku-caddy/config
+EOF
+chmod 0600 /opt/versus-waku-relay/.env
+
+cat > /etc/systemd/system/versus-waku-relay.service <<'EOF'
+[Unit]
+Description=Versus Waku relay stack
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/versus-waku-relay
+ExecStart=/usr/bin/docker compose --env-file /opt/versus-waku-relay/.env -f /opt/versus-waku-relay/deploy/docker-compose.yml up -d --remove-orphans
+ExecStop=/usr/bin/docker compose --env-file /opt/versus-waku-relay/.env -f /opt/versus-waku-relay/deploy/docker-compose.yml down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now versus-waku-relay

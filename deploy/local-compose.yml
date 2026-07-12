@@ -1,0 +1,58 @@
+name: versus-waku-relay-local
+
+x-node: &node
+  image: wakuorg/nwaku:v0.38.1
+  restart: "no"
+  networks: [waku]
+  command: &command
+    - --log-level=INFO
+    - --log-format=JSON
+    - --relay=true
+    - --filter=true
+    - --lightpush=true
+    - --store=true
+    - --store-message-retention-policy=time:3600;capacity:10000;size:100MB
+    - --store-message-db-url=sqlite:///data/store.sqlite3
+    - --cluster-id=66
+    - --num-shards-in-network=8
+    - --max-msg-size=32KiB
+    - --discv5-discovery=false
+    - --peer-exchange=false
+    - --rendezvous=false
+    - --ip-colocation-limit=0
+    - --websocket-support=true
+    - --websocket-port=8000
+    - --rest=true
+    - --rest-address=0.0.0.0
+    - --rest-port=8645
+    - --rest-admin=true
+
+services:
+  node1:
+    <<: *node
+    command: *command
+    environment:
+      WAKUNODE2_NODEKEY: "0000000000000000000000000000000000000000000000000000000000000001"
+    volumes: [node1:/data]
+    ports:
+      - 127.0.0.1:18000:8000
+      - 127.0.0.1:18645:8645
+
+  node2:
+    <<: *node
+    command: *command
+    environment:
+      WAKUNODE2_NODEKEY: "0000000000000000000000000000000000000000000000000000000000000002"
+      WAKUNODE2_STATICNODE: ${VERSUS_LOCAL_NODE1:?VERSUS_LOCAL_NODE1 is required}
+    volumes: [node2:/data]
+    ports:
+      - 127.0.0.1:18001:8000
+      - 127.0.0.1:18646:8645
+
+networks:
+  waku:
+    driver: bridge
+
+volumes:
+  node1:
+  node2:

@@ -1,0 +1,23 @@
+{$PUBLIC_DOMAIN} {
+	encode zstd gzip
+
+	handle /healthz {
+		rewrite * /debug/v1/info
+		reverse_proxy nwaku:8645
+	}
+
+	handle {
+		reverse_proxy nwaku:8000
+	}
+
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}

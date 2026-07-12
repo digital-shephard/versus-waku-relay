@@ -1,0 +1,64 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+export const ENV_PATH = path.join(ROOT, ".env");
+export const COMPOSE_PATH = path.join(ROOT, "deploy", "docker-compose.yml");
+
+export function parseEnv(text) {
+  const result = {};
+  for (const raw of String(text).split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    const index = line.indexOf("=");
+    if (index < 1) throw new Error(`invalid environment line: ${raw}`);
+    result[line.slice(0, index).trim()] = line.slice(index + 1).trim();
+  }
+  return result;
+}
+
+export function loadEnv(file = ENV_PATH) {
+  if (!fs.existsSync(file)) throw new Error(`missing ${path.relative(ROOT, file)}; run npm run configure`);
+  return parseEnv(fs.readFileSync(file, "utf8"));
+}
+
+function integer(env, name, minimum, maximum, fallback) {
+  const value = Number(env[name] ?? fallback);
+  if (!Number.isInteger(value) || value < minimum || value > maximum) {
+    throw new Error(`${name} must be an integer from ${minimum} to ${maximum}`);
+  }
+  return value;
+}
+
+export function validateEnv(env, { allowPlaceholders = false } = {}) {
+  const required = ["NWAKU_IMAGE", "PUBLIC_DOMAIN", "PUBLIC_IP", "VERSUS_WAKU_NODE_KEY", "VERSUS_WAKU_STATIC_PEER"];
+  for (const name of required) if (!env[name]) throw new Error(`${name} is required`);
+  if (env.NWAKU_IMAGE !== "wakuorg/nwaku:v0.38.1") throw new Error("NWAKU_IMAGE must remain pinned to wakuorg/nwaku:v0.38.1 until an upgrade is validated");
+  if (!/^[a-f0-9]{64}$/.test(env.VERSUS_WAKU_NODE_KEY)) throw new Error("VERSUS_WAKU_NODE_KEY must be 64 lowercase hexadecimal characters");
+  if (!allowPlaceholders && /example\.org|203\.0\.113\.|replace_with/i.test(`${env.PUBLIC_DOMAIN} ${env.PUBLIC_IP} ${env.VERSUS_WAKU_STATIC_PEER}`)) {
+    throw new Error("replace the example domain, IP, and static peer before deployment");
+  }
+  if (!/^\/[^\s]+\/p2p\/[^/\s]+$/.test(env.VERSUS_WAKU_STATIC_PEER)) throw new Error("VERSUS_WAKU_STATIC_PEER must be a complete peer multiaddress");
+  integer(env, "VERSUS_WAKU_CLUSTER_ID", 1, 65535);
+  integer(env, "VERSUS_WAKU_NUM_SHARDS", 1, 1024);
+  integer(env, "VERSUS_WAKU_STORE_SECONDS", 60, 604800);
+  integer(env, "VERSUS_WAKU_STORE_CAPACITY", 100, 1000000);
+  integer(env, "VERSUS_WAKU_MAX_CONNECTIONS", 10, 10000);
+  integer(env, "VERSUS_WAKU_IP_COLOCATION_LIMIT", 1, 1000, 20);
+  return env;
+}
+
+export function peerIdFromInfo(info) {
+  for (const address of [...(info.listenAddresses || []), ...(info.listen_addresses || [])]) {
+    const match = String(address).match(/\/p2p\/([^/]+)$/);
+    if (match) return match[1];
+  }
+  const value = info.peerId || info.peer_id;
+  if (!value) throw new Error("nwaku info did not expose a peer ID");
+  return String(value);
+}
+
+export function publicWssMultiaddr(env, peerId) {
+  return `/dns4/${env.PUBLIC_DOMAIN}/tcp/443/wss/p2p/${peerId}`;
+}

@@ -1,0 +1,35 @@
+name: Validate relay deployment
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+      - run: npm run configure
+      - name: Replace deployment placeholders for structural validation
+        run: |
+          sed -i 's/relay-a.example.org/relay-a.versus.invalid/' .env
+          sed -i 's/203.0.113.10/198.51.100.10/' .env
+          sed -i 's#replace_with_peer_id#16Uiu2HAmValidationPeer#' .env
+      - run: npm run compose:check
+      - run: npm run identity
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false
+        working-directory: infra/aws
+      - run: terraform validate
+        working-directory: infra/aws

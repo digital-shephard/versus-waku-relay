@@ -1,0 +1,27 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+build/
+data/
+logs/
+runtime/
+backups/
+*.log
+*.pid
+*.key
+*.pem
+*.p12
+*.pfx
+.DS_Store
+Thumbs.db
+# Terraform local state and deployment inputs
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+infra/aws/backend.hcl
+infra/aws/terraform.tfvars
+crash.log
+crash.*.log

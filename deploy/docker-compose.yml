@@ -1,0 +1,98 @@
+name: versus-waku-relay
+
+services:
+  nwaku:
+    image: ${NWAKU_IMAGE:-wakuorg/nwaku:v0.38.1}
+    restart: unless-stopped
+    stop_grace_period: 45s
+    command:
+      - --log-level=INFO
+      - --log-format=JSON
+      - --agent-string=versus-waku-relay/0.1
+      - --nodekey=${VERSUS_WAKU_NODE_KEY:?set VERSUS_WAKU_NODE_KEY}
+      - --cluster-id=${VERSUS_WAKU_CLUSTER_ID:-66}
+      - --num-shards-in-network=${VERSUS_WAKU_NUM_SHARDS:-8}
+      - --max-msg-size=32KiB
+      - --relay=true
+      - --filter=true
+      - --lightpush=true
+      - --store=true
+      - --store-message-retention-policy=time:${VERSUS_WAKU_STORE_SECONDS:-21600};capacity:${VERSUS_WAKU_STORE_CAPACITY:-25000};size:${VERSUS_WAKU_STORE_SIZE:-512MB}
+      - --store-message-db-url=sqlite:///data/store.sqlite3
+      - --store-message-db-migration=true
+      - --peer-persistence=true
+      - --peer-store-capacity=${VERSUS_WAKU_PEER_STORE_CAPACITY:-1000}
+      - --keep-alive=true
+      - --max-connections=${VERSUS_WAKU_MAX_CONNECTIONS:-200}
+      - --relay-service-ratio=60:40
+      - --filter-max-peers-to-serve=${VERSUS_WAKU_FILTER_MAX_PEERS:-250}
+      - --filter-max-criteria=${VERSUS_WAKU_FILTER_MAX_CRITERIA:-64}
+      - --rate-limit=lightpush:30/1s
+      - --rate-limit=store:10/1s
+      - --rate-limit=filter:12/1m
+      - --discv5-discovery=false
+      - --peer-exchange=false
+      - --rendezvous=false
+      - --staticnode=${VERSUS_WAKU_STATIC_PEER:?set VERSUS_WAKU_STATIC_PEER}
+      - --ip-colocation-limit=${VERSUS_WAKU_IP_COLOCATION_LIMIT:-20}
+      - --nat=extip:${PUBLIC_IP:?set PUBLIC_IP}
+      - --ext-multiaddr=/dns4/${PUBLIC_DOMAIN:?set PUBLIC_DOMAIN}/tcp/443/wss
+      - --websocket-support=true
+      - --websocket-port=8000
+      - --rest=true
+      - --rest-address=0.0.0.0
+      - --rest-port=8645
+      - --rest-admin=false
+      - --metrics-server=true
+      - --metrics-server-address=0.0.0.0
+      - --metrics-server-port=8008
+    volumes:
+      - ${VERSUS_WAKU_DATA_DIR:-./data}:/data
+    ports:
+      - 60000:60000/tcp
+      - 127.0.0.1:${VERSUS_WAKU_REST_PORT:-18645}:8645/tcp
+      - 127.0.0.1:${VERSUS_WAKU_METRICS_PORT:-18008}:8008/tcp
+    networks:
+      - edge
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: 25m
+        max-file: "5"
+
+  caddy:
+    image: ${CADDY_IMAGE:-caddy:2.10.0-alpine}
+    restart: unless-stopped
+    depends_on:
+      - nwaku
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?set PUBLIC_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${CADDY_DATA_DIR:-./runtime/caddy-data}:/data
+      - ${CADDY_CONFIG_DIR:-./runtime/caddy-config}:/config
+    ports:
+      - 80:80/tcp
+      - 443:443/tcp
+      - 443:443/udp
+    networks:
+      - edge
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  edge:
+    driver: bridge
