@@ -8,7 +8,7 @@ curl --fail --silent --show-error --location https://awscli.amazonaws.com/awscli
 unzip -q /tmp/awscliv2.zip -d /tmp
 /tmp/aws/install --update
 rm -rf /tmp/aws /tmp/awscliv2.zip
-systemctl enable --now docker amazon-ssm-agent
+systemctl enable --now docker
 
 install -d -m 0755 /opt/versus-waku-relay /var/lib/versus-waku /var/lib/versus-waku-caddy/data /var/lib/versus-waku-caddy/config
 
