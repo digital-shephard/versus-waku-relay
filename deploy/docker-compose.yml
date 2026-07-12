@@ -12,6 +12,14 @@ services:
       - --nodekey=${VERSUS_WAKU_NODE_KEY:?set VERSUS_WAKU_NODE_KEY}
       - --cluster-id=${VERSUS_WAKU_CLUSTER_ID:-66}
       - --num-shards-in-network=${VERSUS_WAKU_NUM_SHARDS:-8}
+      - --shard=0
+      - --shard=1
+      - --shard=2
+      - --shard=3
+      - --shard=4
+      - --shard=5
+      - --shard=6
+      - --shard=7
       - --max-msg-size=32KiB
       - --relay=true
       - --filter=true
