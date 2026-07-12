@@ -31,7 +31,7 @@ variable "repository_ref" {
   type        = string
 
   validation {
-    condition     = length(trimspace(var.repository_ref)) >= 7 && var.repository_ref != "main"
+    condition     = length(trimspace(var.repository_ref)) >= 5 && var.repository_ref != "main"
     error_message = "repository_ref must be an immutable tag or commit, not main."
   }
 }
