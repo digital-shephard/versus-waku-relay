@@ -1,8 +1,9 @@
 hosted_zone_id = "Z0311013310XU676PF8KT"
-repository_ref = "v0.1.1"
+repository_ref = "v0.1.2"
 
 relay_a = {
   region                  = "us-east-1"
+  availability_zone       = "us-east-1a"
   domain                  = "relay-a.versuscypher.com"
   vpc_cidr                = "10.81.0.0/16"
   subnet_cidr             = "10.81.1.0/24"

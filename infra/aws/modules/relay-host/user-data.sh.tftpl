@@ -3,7 +3,11 @@ set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get install -y ca-certificates curl docker.io docker-compose-v2 git awscli nodejs npm
+apt-get install -y ca-certificates curl docker.io docker-compose-v2 git nodejs npm unzip
+curl --fail --silent --show-error --location https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip --output /tmp/awscliv2.zip
+unzip -q /tmp/awscliv2.zip -d /tmp
+/tmp/aws/install --update
+rm -rf /tmp/aws /tmp/awscliv2.zip
 systemctl enable --now docker amazon-ssm-agent
 
 install -d -m 0755 /opt/versus-waku-relay /var/lib/versus-waku /var/lib/versus-waku-caddy/data /var/lib/versus-waku-caddy/config
