@@ -105,7 +105,7 @@ services:
     build:
       context: ..
       dockerfile: deploy/node.Dockerfile
-    image: ${VERSUS_NODE_IMAGE:-versus-node:0.1.0}
+    image: ${VERSUS_NODE_IMAGE:-versus-node:0.2.1}
     restart: unless-stopped
     depends_on:
       - nwaku

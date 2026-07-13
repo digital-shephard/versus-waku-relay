@@ -1,6 +1,6 @@
 {
   "name": "versus-waku-relay",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Versus full node: verified Base event indexing with Waku transport",
   "license": "MIT",

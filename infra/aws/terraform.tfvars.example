@@ -1,5 +1,5 @@
 hosted_zone_id = "Z0311013310XU676PF8KT"
-repository_ref = "v0.2.0"
+repository_ref = "v0.2.1"
 
 relay_a = {
   region                  = "us-east-1"
