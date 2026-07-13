@@ -18,7 +18,6 @@ export class WakuRestPublisher {
       body: JSON.stringify({
         payload: payload.toString("base64"),
         contentTopic: this.contentTopic,
-        timestamp: Math.floor(Date.now() / 1000),
         ephemeral: false,
       }),
     });
