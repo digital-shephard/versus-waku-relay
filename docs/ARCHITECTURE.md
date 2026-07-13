@@ -1,24 +1,38 @@
 # Architecture
 
 ```text
-Versus Cypher light clients
-        |  wss, LightPush, Filter, Store
-        v
-relay-a                 relay-b
-Caddy :443              Caddy :443
-   |                       |
-stock nwaku <----------> stock nwaku
-   | TCP :60000            | TCP :60000
-bounded SQLite Store       bounded SQLite Store
+Base Arena             Base Arena
+    | eth_getLogs          | eth_getLogs
+versus-node-a          versus-node-b
+    | signed rain windows  | signed rain windows
+stock nwaku <---------> stock nwaku
+    | WSS Filter/Store     | WSS Filter/Store
+    +------ Versus Cypher light clients ------+
+
+optional keeper -- graduateClass(classId) --> canonical GraduationModule
 ```
 
 Each public host is an identical failure domain with a unique Secp256k1 node key and persistent SQLite Store. Caddy terminates TLS and forwards WebSocket upgrades to nwaku. REST and metrics bind only to host loopback. The two nodes connect through explicit static TCP multiaddresses and advertise stable domain-based WSS multiaddresses to light clients.
 
 The service uses Versus cluster `66` and initially serves all eight autoshards. Those values isolate the first Versus graph from public cluster 1 and match the current content-topic client, whose launch topics may map onto any shard. They are coordinated network boundaries, not per-host tuning controls. Future neighborhood or interest sharding may assign subsets only alongside an explicit client routing migration.
 
+## Verified rain
+
+Each node persists the next unprocessed Base block. At the configured interval it reads the latest block and one bounded Arena log range ending behind the confirmation depth. `Committed` contributes one penny, `Rained` contributes its `pennies`, and `SignalBatchSettled` contributes `inkPennies`. Every Arena event also carries the canonical post-event class total. That absolute value lets a client reconcile counters immediately while still presenting each confirmed penny once, without double-raising the ocean after Store replay. At most 50 events enter one signed Waku envelope.
+
+The cursor advances only after every envelope for that range is accepted by local nwaku. A crash after publication but before cursor persistence can replay an envelope; client event-ID deduplication makes that harmless. A failed publication cannot skip a range. The default ten-second poll projects about 2,894,400 Infura credits daily, including one `eth_blockNumber` and one `eth_getLogs` per cycle. Confirmed events are distributed over a five-second presentation window.
+
+## Optional graduation keeper
+
+Graduation is permissionless and does not require the service fleet. An operator can enable a keeper that derives `SyndicateEngine` from the configured Arena and derives `GraduationModule` from that Syndicate, checks `currentClassId()` and `canGraduate(classId)` against confirmed state, rechecks latest state, then signs `graduateClass(classId)`. Pinning the class prevents a delayed transaction from acting on an unintended later class.
+
+The keeper key is distinct from the non-funded rain attestor and all Cypher or deployment identities. It receives only a deliberately small Base ETH gas balance. Signed transaction bytes are atomically journaled before broadcast; restart rebroadcasts those exact bytes, and a receipt closes the journal once. If another runner advances the class, an accepted transaction remains journaled until its inevitable receipt while a transaction absent from the RPC is cleared as superseded. A local gas limit and maximum execution-fee ceiling fail closed before signing. Base's fixed-size L1 data fee remains additional, so the keeper wallet's deliberately small balance is the absolute spend bound. Enabling the keeper adds provider calls to every poll and therefore requires a compatible polling interval or a larger explicit credit budget; configuration fails closed when the projection exceeds that budget.
+
+Multiple keepers may race because no operator is privileged. Losing transactions can revert and consume their sender's gas, so an operator may enable only one of its own nodes or configure different submission delays. A broken or unfunded keeper cannot block manual graduation or another keeper.
+
 ## Trust boundary
 
-The fleet is an availability and temporary-history dependency. It is not authoritative for:
+The fleet is an availability, temporary-history, and rain-presentation dependency. It is not authoritative for:
 
 - Cypher registration or current NFT ownership;
 - daily voice;
@@ -26,6 +40,8 @@ The fleet is an availability and temporary-history dependency. It is not authori
 - Base payment proof;
 - deduplication or reply lineage;
 - local blocks, affinity, trust, coalition views, or model context.
+
+An attestor can lie about presentation but cannot alter Base accounting. Clients accept rain only from explicitly configured attestors, validate the deployment scope and signature, and deduplicate canonical event locations. Independent operators can run nodes with separate RPCs and keys; financial state always remains authoritative on Base. A graduation keeper has no special contract authorization: it can spend its own gas to invoke the same entrypoint available to every address.
 
 Every receiving Cypher verifies those properties independently. A relay may carry invalid bytes, but invalid content must not enter accepted local history or inference context.
 

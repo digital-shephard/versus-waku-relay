@@ -39,31 +39,53 @@ variable "repository_ref" {
 variable "relay_a" {
   description = "Region-specific configuration for relay A."
   type = object({
-    region                  = string
-    availability_zone       = optional(string)
-    domain                  = string
-    vpc_cidr                = string
-    subnet_cidr             = string
-    instance_type           = optional(string, "t3.small")
-    root_volume_gib         = optional(number, 30)
-    node_key_parameter_name = string
-    static_peer             = string
+    region                               = string
+    availability_zone                    = optional(string)
+    domain                               = string
+    vpc_cidr                             = string
+    subnet_cidr                          = string
+    instance_type                        = optional(string, "t3.small")
+    root_volume_gib                      = optional(number, 30)
+    node_key_parameter_name              = string
+    rain_attestor_key_parameter_name     = string
+    base_rpc_url_parameter_name          = string
+    graduation_keeper_enabled            = optional(bool, false)
+    graduation_keeper_key_parameter_name = optional(string)
+    static_peer                          = string
   })
+  validation {
+    condition = !var.relay_a.graduation_keeper_enabled || try(
+      length(trimspace(var.relay_a.graduation_keeper_key_parameter_name)) > 0,
+      false,
+    )
+    error_message = "relay_a requires graduation_keeper_key_parameter_name when its keeper is enabled."
+  }
 }
 
 variable "relay_b" {
   description = "Region-specific configuration for relay B."
   type = object({
-    region                  = string
-    availability_zone       = optional(string)
-    domain                  = string
-    vpc_cidr                = string
-    subnet_cidr             = string
-    instance_type           = optional(string, "t3.small")
-    root_volume_gib         = optional(number, 30)
-    node_key_parameter_name = string
-    static_peer             = string
+    region                               = string
+    availability_zone                    = optional(string)
+    domain                               = string
+    vpc_cidr                             = string
+    subnet_cidr                          = string
+    instance_type                        = optional(string, "t3.small")
+    root_volume_gib                      = optional(number, 30)
+    node_key_parameter_name              = string
+    rain_attestor_key_parameter_name     = string
+    base_rpc_url_parameter_name          = string
+    graduation_keeper_enabled            = optional(bool, false)
+    graduation_keeper_key_parameter_name = optional(string)
+    static_peer                          = string
   })
+  validation {
+    condition = !var.relay_b.graduation_keeper_enabled || try(
+      length(trimspace(var.relay_b.graduation_keeper_key_parameter_name)) > 0,
+      false,
+    )
+    error_message = "relay_b requires graduation_keeper_key_parameter_name when its keeper is enabled."
+  }
 }
 
 variable "store" {
@@ -74,6 +96,50 @@ variable "store" {
     size     = optional(string, "512MB")
   })
   default = {}
+}
+
+variable "rain" {
+  description = "Canonical Arena indexing and provider-budget policy shared by full nodes."
+  type = object({
+    chain_id                = optional(number, 8453)
+    arena_address           = string
+    start_block             = number
+    poll_ms                 = optional(number, 10000)
+    confirmations           = optional(number, 2)
+    distribution_ms         = optional(number, 5000)
+    rpc_daily_credit_budget = optional(number, 3000000)
+  })
+  validation {
+    condition = (
+      can(regex("^0x[a-fA-F0-9]{40}$", var.rain.arena_address)) &&
+      var.rain.poll_ms >= 10000 &&
+      var.rain.distribution_ms >= 1000
+    )
+    error_message = "rain requires a valid Arena address, poll_ms of at least 10000, and distribution_ms of at least 1000."
+  }
+}
+
+variable "graduation" {
+  description = "Optional permissionless graduation-transaction safety policy shared by enabled keepers."
+  type = object({
+    submission_delay_ms   = optional(number, 0)
+    rebroadcast_ms        = optional(number, 120000)
+    max_gas_limit         = optional(number, 8000000)
+    max_execution_fee_wei = optional(string, "5000000000000000")
+  })
+  default = {}
+  validation {
+    condition = (
+      var.graduation.submission_delay_ms >= 0 &&
+      var.graduation.submission_delay_ms <= 86400000 &&
+      var.graduation.rebroadcast_ms >= 10000 &&
+      var.graduation.rebroadcast_ms <= 86400000 &&
+      var.graduation.max_gas_limit >= 100000 &&
+      var.graduation.max_gas_limit <= 30000000 &&
+      can(regex("^[1-9][0-9]*$", var.graduation.max_execution_fee_wei))
+    )
+    error_message = "graduation keeper timing, gas limit, or execution-fee ceiling is invalid."
+  }
 }
 
 variable "operator_cidr_blocks" {

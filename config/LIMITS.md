@@ -16,5 +16,8 @@ The defaults in `.env.example` are conservative V1 operator limits, not protocol
 | LightPush | 30 requests/second | Coarse transport abuse resistance. |
 | Store | 10 requests/second | Prevents unbounded history-query load. |
 | Filter | 12 operations/minute per subscriber | Allows refresh while limiting subscription churn. |
+| Graduation keeper | Disabled | Graduation remains permissionless and independent of relay availability. |
+| Graduation gas limit | 8,000,000 | Refuses anomalous estimates before signing. |
+| Graduation execution-fee ceiling | 0.005 ETH | Bounds execution gas before signing; Base L1 data fee remains additional and the small wallet balance is final. |
 
 Changing cluster, shard, or topic boundaries requires coordinated client configuration and a preserved migration test. The first nodes serve all eight shards; future neighborhood or interest sharding may assign subsets only after the client routing rule is explicit. Raising connection or retention limits requires capacity and disk evidence. Desktop clients still enforce registered-Cypher ownership, daily voice, signatures, payment proof, deduplication, and local trust.

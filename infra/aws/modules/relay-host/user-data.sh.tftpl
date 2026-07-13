@@ -11,6 +11,7 @@ rm -rf /tmp/aws /tmp/awscliv2.zip
 systemctl enable --now docker
 
 install -d -m 0755 /opt/versus-waku-relay /var/lib/versus-waku /var/lib/versus-waku-caddy/data /var/lib/versus-waku-caddy/config
+install -d -o 1000 -g 1000 -m 0700 /var/lib/versus-node
 
 if [[ ! -d /opt/versus-waku-relay/.git ]]; then
   git clone "${repository_url}" /opt/versus-waku-relay
@@ -35,6 +36,26 @@ if [[ ! "$node_key" =~ ^[0-9a-fA-F]{64}$ ]]; then
   exit 1
 fi
 
+rain_attestor_key=$(aws ssm get-parameter --region "${region}" --name "${rain_attestor_key_parameter_name}" --with-decryption --query Parameter.Value --output text)
+base_rpc_url=$(aws ssm get-parameter --region "${region}" --name "${base_rpc_url_parameter_name}" --with-decryption --query Parameter.Value --output text)
+if [[ ! "$rain_attestor_key" =~ ^0x[0-9a-fA-F]{64}$ ]] || [[ ! "$base_rpc_url" =~ ^https:// ]]; then
+  echo "Versus node attestor key or Base RPC URL is invalid" >&2
+  exit 1
+fi
+
+graduation_keeper_key=""
+if [[ "${graduation_keeper_enabled}" == "true" ]]; then
+  graduation_keeper_key=$(aws ssm get-parameter --region "${region}" --name "${graduation_keeper_key_parameter_name}" --with-decryption --query Parameter.Value --output text)
+  if [[ ! "$graduation_keeper_key" =~ ^0x[0-9a-fA-F]{64}$ ]]; then
+    echo "Versus graduation keeper key is invalid" >&2
+    exit 1
+  fi
+  if [[ "$${graduation_keeper_key,,}" == "$${rain_attestor_key,,}" ]]; then
+    echo "Versus graduation keeper must not reuse the rain attestor key" >&2
+    exit 1
+  fi
+fi
+
 cat > /opt/versus-waku-relay/.env <<EOF
 NWAKU_IMAGE=wakuorg/nwaku:v0.38.1
 CADDY_IMAGE=caddy:2.10.2-alpine
@@ -57,6 +78,23 @@ VERSUS_WAKU_METRICS_PORT=18008
 VERSUS_WAKU_DATA_DIR=/var/lib/versus-waku
 CADDY_DATA_DIR=/var/lib/versus-waku-caddy/data
 CADDY_CONFIG_DIR=/var/lib/versus-waku-caddy/config
+VERSUS_BASE_RPC_URL=$base_rpc_url
+VERSUS_CHAIN_ID=${chain_id}
+VERSUS_ARENA_ADDRESS=${arena_address}
+VERSUS_RAIN_ATTESTOR_PRIVATE_KEY=$rain_attestor_key
+VERSUS_RAIN_START_BLOCK=${rain_start_block}
+VERSUS_RAIN_POLL_MS=${rain_poll_ms}
+VERSUS_RAIN_CONFIRMATIONS=${rain_confirmations}
+VERSUS_RAIN_DISTRIBUTION_MS=${rain_distribution_ms}
+VERSUS_RPC_DAILY_CREDIT_BUDGET=${rpc_daily_credit_budget}
+VERSUS_GRADUATION_ENABLED=${graduation_keeper_enabled}
+VERSUS_GRADUATION_KEEPER_PRIVATE_KEY=$graduation_keeper_key
+VERSUS_GRADUATION_SUBMISSION_DELAY_MS=${graduation_submission_delay_ms}
+VERSUS_GRADUATION_REBROADCAST_MS=${graduation_rebroadcast_ms}
+VERSUS_GRADUATION_MAX_GAS_LIMIT=${graduation_max_gas_limit}
+VERSUS_GRADUATION_MAX_EXECUTION_FEE_WEI=${graduation_max_execution_fee_wei}
+VERSUS_NODE_DATA_DIR=/var/lib/versus-node
+VERSUS_NODE_HEALTH_PORT=18787
 EOF
 chmod 0600 /opt/versus-waku-relay/.env
 

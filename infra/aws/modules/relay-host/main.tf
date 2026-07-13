@@ -1,12 +1,26 @@
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
+moved {
+  from = aws_iam_role_policy.node_key
+  to   = aws_iam_role_policy.node_secrets
+}
+
 data "aws_ssm_parameter" "ubuntu_ami" {
   name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
 }
 
 locals {
-  parameter_arn = "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter${var.node_key_parameter_name}"
+  parameter_names = compact([
+    var.node_key_parameter_name,
+    var.rain_attestor_key_parameter_name,
+    var.base_rpc_url_parameter_name,
+    var.graduation_keeper_enabled ? var.graduation_keeper_key_parameter_name : null,
+  ])
+  parameter_arns = [
+    for name in local.parameter_names :
+    "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter${name}"
+  ]
 }
 
 resource "aws_vpc" "this" {
@@ -117,7 +131,8 @@ resource "aws_iam_role_policy_attachment" "ssm_core" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_role_policy" "node_key" {
+resource "aws_iam_role_policy" "node_secrets" {
+  # Keep the original IAM policy name so existing fleets update in place.
   name = "read-own-node-key"
   role = aws_iam_role.relay.id
   policy = jsonencode({
@@ -126,7 +141,7 @@ resource "aws_iam_role_policy" "node_key" {
       {
         Effect   = "Allow"
         Action   = ["ssm:GetParameter"]
-        Resource = local.parameter_arn
+        Resource = local.parameter_arns
       },
       {
         Effect   = "Allow"
@@ -172,16 +187,31 @@ resource "aws_instance" "relay" {
   }
 
   user_data = templatefile("${path.module}/user-data.sh.tftpl", {
-    region                  = data.aws_region.current.region
-    public_ip               = aws_eip.relay.public_ip
-    domain                  = var.domain
-    node_key_parameter_name = var.node_key_parameter_name
-    static_peer             = var.static_peer
-    repository_url          = var.repository_url
-    repository_ref          = var.repository_ref
-    store_seconds           = var.store_seconds
-    store_capacity          = var.store_capacity
-    store_size              = var.store_size
+    region                               = data.aws_region.current.region
+    public_ip                            = aws_eip.relay.public_ip
+    domain                               = var.domain
+    node_key_parameter_name              = var.node_key_parameter_name
+    rain_attestor_key_parameter_name     = var.rain_attestor_key_parameter_name
+    base_rpc_url_parameter_name          = var.base_rpc_url_parameter_name
+    graduation_keeper_enabled            = var.graduation_keeper_enabled
+    graduation_keeper_key_parameter_name = var.graduation_keeper_key_parameter_name != null ? var.graduation_keeper_key_parameter_name : ""
+    chain_id                             = var.chain_id
+    arena_address                        = var.arena_address
+    rain_start_block                     = var.rain_start_block
+    rain_poll_ms                         = var.rain_poll_ms
+    rain_confirmations                   = var.rain_confirmations
+    rain_distribution_ms                 = var.rain_distribution_ms
+    rpc_daily_credit_budget              = var.rpc_daily_credit_budget
+    graduation_submission_delay_ms       = var.graduation_submission_delay_ms
+    graduation_rebroadcast_ms            = var.graduation_rebroadcast_ms
+    graduation_max_gas_limit             = var.graduation_max_gas_limit
+    graduation_max_execution_fee_wei     = var.graduation_max_execution_fee_wei
+    static_peer                          = var.static_peer
+    repository_url                       = var.repository_url
+    repository_ref                       = var.repository_ref
+    store_seconds                        = var.store_seconds
+    store_capacity                       = var.store_capacity
+    store_size                           = var.store_size
   })
 
   depends_on = [aws_route_table_association.public]

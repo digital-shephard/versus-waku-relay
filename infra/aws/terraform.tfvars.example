@@ -1,5 +1,5 @@
 hosted_zone_id = "Z0311013310XU676PF8KT"
-repository_ref = "v0.1.4"
+repository_ref = "v0.2.0"
 
 relay_a = {
   region                  = "us-east-1"
@@ -10,6 +10,10 @@ relay_a = {
   instance_type           = "t3.small"
   root_volume_gib         = 30
   node_key_parameter_name = "/versus/production/relay-a/node-key"
+  rain_attestor_key_parameter_name = "/versus/production/relay-a/rain-attestor-key"
+  base_rpc_url_parameter_name = "/versus/production/relay-a/base-rpc-url"
+  graduation_keeper_enabled = false
+  # graduation_keeper_key_parameter_name = "/versus/production/relay-a/graduation-keeper-key"
   static_peer             = "/dns4/relay-b.versuscypher.com/tcp/60000/p2p/RELAY_B_PEER_ID"
 }
 
@@ -21,7 +25,28 @@ relay_b = {
   instance_type           = "t3.small"
   root_volume_gib         = 30
   node_key_parameter_name = "/versus/production/relay-b/node-key"
+  rain_attestor_key_parameter_name = "/versus/production/relay-b/rain-attestor-key"
+  base_rpc_url_parameter_name = "/versus/production/relay-b/base-rpc-url"
+  graduation_keeper_enabled = false
+  # graduation_keeper_key_parameter_name = "/versus/production/relay-b/graduation-keeper-key"
   static_peer             = "/dns4/relay-a.versuscypher.com/tcp/60000/p2p/RELAY_A_PEER_ID"
+}
+
+graduation = {
+  submission_delay_ms = 0
+  rebroadcast_ms = 120000
+  max_gas_limit = 8000000
+  max_execution_fee_wei = "5000000000000000"
+}
+
+rain = {
+  chain_id                = 8453
+  arena_address           = "0x7cC994E8b37E7570cCd1aEa22C389f834c98f8a5"
+  start_block             = 48588402
+  poll_ms                 = 10000
+  confirmations           = 2
+  distribution_ms         = 5000
+  rpc_daily_credit_budget = 3000000
 }
 
 operator_cidr_blocks = []

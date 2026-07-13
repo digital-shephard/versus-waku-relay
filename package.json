@@ -1,12 +1,14 @@
 {
   "name": "versus-waku-relay",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Stock nwaku deployment and operations for the Versus network",
+  "description": "Versus full node: verified Base event indexing with Waku transport",
   "license": "MIT",
   "scripts": {
     "configure": "node scripts/configure.mjs",
     "identity": "node scripts/identity.mjs",
+    "attestor": "node scripts/attestor.mjs",
+    "keeper": "node scripts/keeper.mjs",
     "local": "node scripts/local-cluster.mjs up",
     "local:status": "node scripts/local-cluster.mjs status",
     "local:down": "node scripts/local-cluster.mjs down",
@@ -15,10 +17,14 @@
     "smoke": "node scripts/smoke.mjs",
     "backup": "node scripts/backup.mjs",
     "restore": "node scripts/restore.mjs",
+    "node": "node src/main.mjs",
     "test": "node --test test/*.test.mjs",
     "compose:check": "docker compose --env-file .env -f deploy/docker-compose.yml config --quiet",
     "up": "docker compose --env-file .env -f deploy/docker-compose.yml up -d",
     "down": "docker compose --env-file .env -f deploy/docker-compose.yml down",
     "logs": "docker compose --env-file .env -f deploy/docker-compose.yml logs -f --tail=200"
+  },
+  "dependencies": {
+    "ethers": "^6.17.0"
   }
 }

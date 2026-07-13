@@ -6,9 +6,18 @@
 npm run health
 docker compose --env-file .env -f deploy/docker-compose.yml ps
 docker compose --env-file .env -f deploy/docker-compose.yml logs --tail=200 nwaku
+docker compose --env-file .env -f deploy/docker-compose.yml logs --tail=200 versus-node
 ```
 
-Monitor process restarts, connected peers, LightPush/Filter/Store protocol availability, Store size, disk, memory, request rate, rejection rate, and TLS expiry. Do not collect message bodies into a secondary analytics database.
+Monitor process restarts, connected peers, LightPush/Filter/Store availability, the verifier block cursor, last successful poll, daily estimated RPC credits, signed penny count, optional keeper state, Store size, disk, memory, and TLS expiry. Do not collect postcard bodies into a secondary analytics database.
+
+The verifier returns `/health` and `/metrics` on host loopback. Alert when the cursor stops advancing for two poll windows, RPC credit use approaches its configured budget, Waku publication fails, two nodes disagree about a canonical event, or an enabled keeper remains `unfunded`, `error`, or `pending` beyond two poll windows. Never reset the cursor forward to clear an alert; replay from an earlier block is safe.
+
+## Graduation keeper
+
+Keep `VERSUS_GRADUATION_ENABLED=false` unless this operator deliberately accepts gas spending. To enable it, generate a dedicated identity with `npm run keeper`, store the private key directly in encrypted SSM or another host secret manager, fund its public address with only a small Base ETH balance, set the execution-fee ceiling, and restart the node. Confirm `/metrics` reports the expected signer plus Arena-derived Syndicate and Graduation addresses. Never fund the rain attestor.
+
+The journal at `/var/lib/versus-node/graduation-state.json` is restart-critical while a transaction is pending. Do not edit it to force retries. `submitted`, `rebroadcast`, and `pending` are normal transient states; `confirmed` means this keeper's transaction won; `superseded_pending` means another address advanced the class while this transaction is still accepted and awaiting its likely reverted receipt; `superseded` means no such transaction remains at the RPC; `reverted` spent gas but did not graduate. The app still observes the resulting canonical class increment through ordinary reconciliation, regardless of who called graduation.
 
 ## Store backup
 
@@ -34,7 +43,7 @@ The displaced pre-restore directory is retained for manual rollback. Store is te
 
 ## Incident priorities
 
-1. Preserve node keys and user funds remain irrelevant because the relay holds none.
+1. Preserve node and attestor identity; if a graduation keeper is enabled, immediately disable or rotate it and move any remaining keeper-only gas funds after host compromise.
 2. Keep one healthy service address available if possible.
 3. Do not erase Store data merely to hide malformed traffic.
 4. Record times, versions, peer counts, resource pressure, and recovery actions without publishing message bodies.
