@@ -43,10 +43,11 @@ rain = {
   chain_id                = 8453
   arena_address           = "0x7cC994E8b37E7570cCd1aEa22C389f834c98f8a5"
   start_block             = 48588402
-  poll_ms                 = 10000
+  poll_ms                 = 12000
   confirmations           = 2
   distribution_ms         = 5000
   rpc_daily_credit_budget = 3000000
+  rpc_credits_per_second   = 500
 }
 
 operator_cidr_blocks = []

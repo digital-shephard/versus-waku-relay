@@ -2,13 +2,17 @@ import http from "node:http";
 import { loadNodeConfig } from "./config.mjs";
 import { GraduationKeeper } from "./graduation-keeper.mjs";
 import { GraduationStateStore } from "./graduation-state-store.mjs";
+import { HatchQuoteService } from "./hatch-quote.mjs";
 import { RainIndexer } from "./rain-indexer.mjs";
 import { CreditMeteredRpc } from "./rpc.mjs";
 import { StateStore } from "./state-store.mjs";
 import { WakuRestPublisher } from "./waku-rest.mjs";
 
 const config = loadNodeConfig();
-const rpc = new CreditMeteredRpc(config.rpcUrl, { dailyCreditBudget: config.dailyCreditBudget });
+const rpc = new CreditMeteredRpc(config.rpcUrl, {
+  dailyCreditBudget: config.dailyCreditBudget,
+  creditsPerSecond: config.rpcCreditsPerSecond,
+});
 const publisher = new WakuRestPublisher({
   restUrl: config.wakuRestUrl,
   chainId: config.chainId,
@@ -43,8 +47,43 @@ const graduationKeeper = new GraduationKeeper({
   submissionDelayMs: config.graduationSubmissionDelayMs,
   rebroadcastMs: config.graduationRebroadcastMs,
 });
+const hatchQuote = config.hatchQuoteEnabled ? new HatchQuoteService({
+  rpc,
+  privateKey: config.privateKey,
+  chainId: config.chainId,
+  arena: config.arena,
+  cachePath: config.hatchQuoteCachePath,
+  refreshMs: config.hatchQuoteRefreshMs,
+  fullScanMs: config.hatchQuoteFullScanMs,
+  validMs: config.hatchQuoteValidMs,
+  staleMs: config.hatchQuoteStaleMs,
+  bufferBps: config.hatchQuoteBufferBps,
+}) : null;
 
 const server = http.createServer((request, response) => {
+  if (request.url === "/v1/hatch-quote") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      response.writeHead(405, { allow: "GET, HEAD" }).end();
+      return;
+    }
+    const quote = hatchQuote?.snapshot();
+    if (!quote) {
+      response.writeHead(503, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      response.end(request.method === "HEAD" ? undefined : JSON.stringify({ ok: false, error: "quote_unavailable" }));
+      return;
+    }
+    response.writeHead(200, {
+      "content-type": "application/json",
+      "cache-control": "public, max-age=15, stale-while-revalidate=120",
+      "access-control-allow-origin": "*",
+      etag: `"${quote.signature.slice(2, 18)}"`,
+    });
+    response.end(request.method === "HEAD" ? undefined : JSON.stringify(quote));
+    return;
+  }
   if (request.url !== "/health" && request.url !== "/metrics") {
     response.writeHead(404).end();
     return;
@@ -56,8 +95,10 @@ const server = http.createServer((request, response) => {
     pollMs: config.pollMs,
     projectedBaseCredits: config.projectedBaseCredits,
     dailyCreditBudget: config.dailyCreditBudget,
+    rpcCreditsPerSecond: config.rpcCreditsPerSecond,
     rain: indexer.status(),
     graduation: graduationKeeper.status(),
+    hatchQuote: hatchQuote?.status() || { available: false, freshness: "disabled" },
     ...(request.url === "/metrics" ? {
       chainId: config.chainId,
       arena: config.arena,
@@ -89,9 +130,21 @@ async function poll() {
 await poll();
 const timer = setInterval(poll, config.pollMs);
 timer.unref?.();
+if (hatchQuote) {
+  hatchQuote.refresh().catch((error) => {
+    process.stderr.write(`${JSON.stringify({ level: "error", event: "hatch_quote_refresh", message: error.message })}\n`);
+  });
+}
+const hatchQuoteTimer = hatchQuote ? setInterval(() => {
+  hatchQuote.refresh().catch((error) => {
+    process.stderr.write(`${JSON.stringify({ level: "error", event: "hatch_quote_refresh", message: error.message })}\n`);
+  });
+}, config.hatchQuoteRefreshMs) : null;
+hatchQuoteTimer?.unref?.();
 
 async function shutdown() {
   clearInterval(timer);
+  if (hatchQuoteTimer) clearInterval(hatchQuoteTimer);
   await indexer.running?.catch(() => {});
   await graduationKeeper.running?.catch(() => {});
   server.close(() => process.exit(0));

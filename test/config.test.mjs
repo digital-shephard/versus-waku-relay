@@ -41,15 +41,17 @@ test("production environment is pinned and bounded", () => {
   assert.throws(() => validateEnv({ ...valid, VERSUS_RAIN_DISTRIBUTION_MS: "999" }), /1000 to 86400000/);
 });
 
-test("rain-only production defaults deliver quickly inside the provider budget", () => {
+test("rain and cached hatch quote defaults stay inside the provider budget", () => {
   const configured = loadNodeConfig({
     ...valid,
     VERSUS_RAIN_POLL_MS: undefined,
   });
-  assert.equal(configured.pollMs, 10_000);
+  assert.equal(configured.pollMs, 12_000);
+  assert.equal(configured.rpcCreditsPerSecond, 500);
   assert.equal(configured.confirmations, 2);
   assert.equal(configured.distributionWindowMs, 5_000);
-  assert.equal(configured.projectedBaseCredits, 2_894_400);
+  assert.equal(configured.projectedHatchQuoteCredits, 138_240);
+  assert.equal(configured.projectedBaseCredits, 2_550_240);
   assert.doesNotThrow(() => validateEnv({ ...valid, VERSUS_RAIN_POLL_MS: undefined }));
 });
 
@@ -74,7 +76,7 @@ test("graduation keeper is opt-in and cannot reuse the rain attestor", () => {
   });
   assert.equal(configured.graduationEnabled, true);
   assert.notEqual(configured.graduationKeeper, configured.attestor);
-  assert.equal(configured.projectedBaseCredits, Math.ceil(86_400_000 / 300_000) * 495);
+  assert.equal(configured.projectedBaseCredits, (Math.ceil(86_400_000 / 300_000) * 495) + 138_240);
 });
 
 test("bootstrap address is deterministic from domain and peer ID", () => {
@@ -83,6 +85,7 @@ test("bootstrap address is deterministic from domain and peer ID", () => {
 
 test("deployment keeps stock nwaku and all operator APIs host-only", () => {
   const compose = fs.readFileSync(path.join(ROOT, "deploy", "docker-compose.yml"), "utf8");
+  const caddy = fs.readFileSync(path.join(ROOT, "deploy", "Caddyfile"), "utf8");
   assert.match(compose, /wakuorg\/nwaku:v0\.38\.1/);
   const nwaku = compose.slice(compose.indexOf("  nwaku:"), compose.indexOf("  caddy:"));
   assert.doesNotMatch(nwaku, /^\s*build:/m);
@@ -93,6 +96,9 @@ test("deployment keeps stock nwaku and all operator APIs host-only", () => {
   assert.match(compose, /--max-msg-size=32KiB/);
   assert.match(compose, /--staticnode=/);
   assert.match(compose, /VERSUS_RPC_DAILY_CREDIT_BUDGET/);
+  assert.match(compose, /VERSUS_HATCH_QUOTE_REFRESH_MS/);
   assert.match(compose, /VERSUS_GRADUATION_ENABLED/);
   assert.match(compose, /VERSUS_GRADUATION_KEEPER_PRIVATE_KEY/);
+  assert.match(caddy, /handle \/v1\/hatch-quote[\s\S]*reverse_proxy versus-node:8787/);
+  assert.doesNotMatch(caddy, /handle \/(?:health|metrics)(?:\s|\{)/);
 });

@@ -36,3 +36,28 @@ test("concurrent and failed RPC calls reserve credits before network IO", async 
   assert.equal(rpc.status().credits, 160);
   assert.equal(results.some((result) => result.reason?.code === "RPC_CREDIT_BUDGET"), true);
 });
+
+test("provider credit bursts are delayed instead of exceeding the per-second ceiling", async () => {
+  let now = 0;
+  const requestTimes = [];
+  const rpc = new CreditMeteredRpc("https://base.example.invalid", {
+    dailyCreditBudget: 3_000_000,
+    creditsPerSecond: 500,
+    now: () => now,
+    sleep: async (milliseconds) => { now += milliseconds; },
+    fetchImpl: async (_url, request) => {
+      requestTimes.push({ now, method: JSON.parse(request.body).method });
+      return { ok: true, json: async () => ({ jsonrpc: "2.0", id: 1, result: "0x1" }) };
+    },
+  });
+  await Promise.all([
+    rpc.call("eth_blockNumber"),
+    rpc.call("eth_getLogs", [{}]),
+    rpc.call("eth_call", [{}]),
+    rpc.call("eth_call", [{}]),
+    rpc.call("eth_call", [{}]),
+  ]);
+  assert.deepEqual(requestTimes.map((request) => request.now), [0, 0, 0, 1_000, 1_000]);
+  assert.equal(rpc.status().credits, 575);
+  assert.equal(rpc.status().requests, 5);
+});

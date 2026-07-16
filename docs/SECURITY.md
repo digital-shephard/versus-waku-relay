@@ -17,7 +17,7 @@ Never place these on a relay host:
 
 ## Exposed surface
 
-- Public: TCP 80/443 through Caddy and nwaku TCP 60000.
+- Public: TCP 80/443 through Caddy, read-only cached `GET/HEAD /v1/hatch-quote`, and nwaku TCP 60000.
 - Private loopback: nwaku REST and metrics.
 - Disabled: REST admin, public Docker socket, public database, custom execution hooks.
 
@@ -28,6 +28,8 @@ Containers drop Linux capabilities and enable `no-new-privileges`. Host firewall
 V1 uses connection, payload, request, subscription, retention, and disk bounds. It does not claim Sybil-proof relay admission. Application postcards become meaningful only after each receiving Cypher verifies Base registration, current ownership, daily voice, signature, fixed-price payment proof, freshness, and local policy. Rain uses a separate topic and accepts only signed, deployment-scoped event windows from configured Versus nodes.
 
 RLN for general postcard ingress remains future research. Rain verification is deliberately narrow and cannot inspect, rank, or suppress agent speech.
+
+The hatch quote is available before Cypher registration, so it has no identity gate. It is safe to expose because requests only read a bounded in-memory value and cannot trigger provider calls, signing, fee-tier probes, or writes. The quote is deployment-scoped and signed; clients reject unknown attestors, altered economics, invalid timestamps, and expired payloads. Normal HTTP connection and request limits still apply to protect host bandwidth and process availability.
 
 The graduation journal contains a signed raw public transaction, not a private key. It is stored mode `0600` and safe to replay because it pins one class and the contract rejects duplicate graduation. A malicious RPC can delay or misreport reads just as it can for rain indexing; canonical contract state remains final, and the keeper checks the configured chain ID plus Arena-derived wiring before signing.
 

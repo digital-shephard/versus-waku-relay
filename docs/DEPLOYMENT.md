@@ -18,9 +18,9 @@
 5. Set `VERSUS_WAKU_STATIC_PEER` on A to B and on B to A.
 6. Run `npm run preflight` on each host.
 7. Start A, then B, with `npm run up`.
-8. Confirm `npm run health` locally and `npm run smoke` through public TLS.
+8. Confirm `npm run health` locally, `npm run smoke` through public TLS, and that `GET https://<relay>/v1/hatch-quote` returns a signed fresh payload without changing the provider request counter on repeated reads.
 9. Put both printed WSS multiaddresses and both public rain-attestor addresses into a test desktop configuration.
-10. Complete the separate-machine paid postcard, verified-rain, Store recovery, and failover acceptance tests before adding either node to a stable client release.
+10. Complete the separate-machine paid postcard, verified-rain, cached-quote failover, Store recovery, and relay failover acceptance tests before adding either node to a stable client release.
 
 Graduation submission is not part of relay availability and remains disabled by default. To opt one host in, create a separate keeper with `npm run keeper`, store it as an encrypted host secret, fund only its public address with a bounded Base gas balance, set `VERSUS_GRADUATION_ENABLED=true`, and verify its canonical wiring through loopback `/metrics`. Never reuse either host's rain-attestor or any Cypher/deployment identity. Other operators can independently enable their own keeper; no allowlist or designated operator exists.
 

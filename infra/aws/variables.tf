@@ -104,16 +104,18 @@ variable "rain" {
     chain_id                = optional(number, 8453)
     arena_address           = string
     start_block             = number
-    poll_ms                 = optional(number, 10000)
+    poll_ms                 = optional(number, 12000)
     confirmations           = optional(number, 2)
     distribution_ms         = optional(number, 5000)
     rpc_daily_credit_budget = optional(number, 3000000)
+    rpc_credits_per_second  = optional(number, 500)
   })
   validation {
     condition = (
       can(regex("^0x[a-fA-F0-9]{40}$", var.rain.arena_address)) &&
       var.rain.poll_ms >= 10000 &&
       var.rain.distribution_ms >= 1000
+      && var.rain.rpc_credits_per_second >= 255
     )
     error_message = "rain requires a valid Arena address, poll_ms of at least 10000, and distribution_ms of at least 1000."
   }

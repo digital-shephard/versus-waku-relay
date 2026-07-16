@@ -202,6 +202,7 @@ resource "aws_instance" "relay" {
     rain_confirmations                   = var.rain_confirmations
     rain_distribution_ms                 = var.rain_distribution_ms
     rpc_daily_credit_budget              = var.rpc_daily_credit_budget
+    rpc_credits_per_second               = var.rpc_credits_per_second
     graduation_submission_delay_ms       = var.graduation_submission_delay_ms
     graduation_rebroadcast_ms            = var.graduation_rebroadcast_ms
     graduation_max_gas_limit             = var.graduation_max_gas_limit

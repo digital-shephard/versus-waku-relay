@@ -72,10 +72,22 @@ export function validateEnv(env, { allowPlaceholders = false } = {}) {
   }
   integer(env, "VERSUS_CHAIN_ID", 1, Number.MAX_SAFE_INTEGER);
   integer(env, "VERSUS_RAIN_START_BLOCK", 0, Number.MAX_SAFE_INTEGER);
-  const pollMs = integer(env, "VERSUS_RAIN_POLL_MS", 10000, 86400000, 10000);
+  const pollMs = integer(env, "VERSUS_RAIN_POLL_MS", 10000, 86400000, 12000);
   const creditBudget = integer(env, "VERSUS_RPC_DAILY_CREDIT_BUDGET", 100000, 1000000000, 3000000);
+  integer(env, "VERSUS_RPC_CREDITS_PER_SECOND", 255, 1000000, 500);
+  const quoteEnabled = boolean(env, "VERSUS_HATCH_QUOTE_ENABLED", true);
+  const quoteRefreshMs = integer(env, "VERSUS_HATCH_QUOTE_REFRESH_MS", 10000, 86400000, 60000);
+  const quoteFullScanMs = integer(env, "VERSUS_HATCH_QUOTE_FULL_SCAN_MS", quoteRefreshMs, 86400000, 600000);
+  const quoteValidMs = integer(env, "VERSUS_HATCH_QUOTE_VALID_MS", quoteRefreshMs, 86400000, 180000);
+  integer(env, "VERSUS_HATCH_QUOTE_STALE_MS", quoteValidMs, 86400000, 900000);
+  integer(env, "VERSUS_HATCH_QUOTE_BUFFER_BPS", 200, 300, 300);
   const creditsPerPoll = 335 + (graduationEnabled ? 160 : 0);
-  if (Math.ceil(86400000 / pollMs) * creditsPerPoll > creditBudget) throw new Error("node poll interval exceeds the RPC daily credit budget");
+  const quoteCredits = quoteEnabled
+    ? (Math.ceil(86400000 / quoteRefreshMs) + (Math.ceil(86400000 / quoteFullScanMs) * 2)) * 80
+    : 0;
+  if ((Math.ceil(86400000 / pollMs) * creditsPerPoll) + quoteCredits > creditBudget) {
+    throw new Error("node poll and hatch quote intervals exceed the RPC daily credit budget");
+  }
   integer(env, "VERSUS_RAIN_CONFIRMATIONS", 0, 10000, 2);
   integer(env, "VERSUS_RAIN_DISTRIBUTION_MS", 1000, 86400000, 5000);
   integer(env, "VERSUS_GRADUATION_SUBMISSION_DELAY_MS", 0, 86400000, 0);

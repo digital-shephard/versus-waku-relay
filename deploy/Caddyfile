@@ -6,6 +6,10 @@
 		reverse_proxy nwaku:8645
 	}
 
+	handle /v1/hatch-quote {
+		reverse_proxy versus-node:8787
+	}
+
 	handle {
 		reverse_proxy nwaku:8000
 	}

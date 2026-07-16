@@ -60,6 +60,7 @@ variable "rain_poll_ms" { type = number }
 variable "rain_confirmations" { type = number }
 variable "rain_distribution_ms" { type = number }
 variable "rpc_daily_credit_budget" { type = number }
+variable "rpc_credits_per_second" { type = number }
 variable "graduation_submission_delay_ms" { type = number }
 variable "graduation_rebroadcast_ms" { type = number }
 variable "graduation_max_gas_limit" { type = number }

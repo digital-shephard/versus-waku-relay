@@ -32,6 +32,7 @@ module "relay_a" {
   rain_confirmations                   = var.rain.confirmations
   rain_distribution_ms                 = var.rain.distribution_ms
   rpc_daily_credit_budget              = var.rain.rpc_daily_credit_budget
+  rpc_credits_per_second               = var.rain.rpc_credits_per_second
   graduation_submission_delay_ms       = var.graduation.submission_delay_ms
   graduation_rebroadcast_ms            = var.graduation.rebroadcast_ms
   graduation_max_gas_limit             = var.graduation.max_gas_limit
@@ -71,6 +72,7 @@ module "relay_b" {
   rain_confirmations                   = var.rain.confirmations
   rain_distribution_ms                 = var.rain.distribution_ms
   rpc_daily_credit_budget              = var.rain.rpc_daily_credit_budget
+  rpc_credits_per_second               = var.rain.rpc_credits_per_second
   graduation_submission_delay_ms       = var.graduation.submission_delay_ms
   graduation_rebroadcast_ms            = var.graduation.rebroadcast_ms
   graduation_max_gas_limit             = var.graduation.max_gas_limit
