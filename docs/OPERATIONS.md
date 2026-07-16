@@ -9,9 +9,9 @@ docker compose --env-file .env -f deploy/docker-compose.yml logs --tail=200 nwak
 docker compose --env-file .env -f deploy/docker-compose.yml logs --tail=200 versus-node
 ```
 
-Monitor process restarts, connected peers, LightPush/Filter/Store availability, the verifier block cursor, last successful poll, daily estimated RPC credits, signed penny count, hatch-quote freshness and selected fee tier, optional keeper state, Store size, disk, memory, and TLS expiry. Do not collect postcard bodies into a secondary analytics database.
+Monitor process restarts, connected peers, LightPush/Filter/Store availability, the verifier block cursor, last successful poll, daily estimated RPC credits, signed penny count, hatch-quote freshness and selected fee tier, signed class-state freshness and block, optional keeper state, Store size, disk, memory, and TLS expiry. Do not collect postcard bodies into a secondary analytics database.
 
-The verifier returns `/health` and `/metrics` on host loopback. Alert when the cursor stops advancing for two poll windows, RPC credit use approaches its configured daily or per-second budget, Waku publication fails, both nodes lack a fresh hatch quote for more than 3 minutes, two nodes disagree about a canonical event, or an enabled keeper remains `unfunded`, `error`, or `pending` beyond two poll windows. A stale quote may serve onboarding for at most 15 minutes; after that the public endpoint returns 503. Never reset the cursor forward to clear an alert; replay from an earlier block is safe.
+The verifier returns `/health` and `/metrics` on host loopback. Alert when the cursor stops advancing for two poll windows, RPC credit use approaches its configured daily or per-second budget, Waku publication fails, both nodes lack a fresh hatch quote or class snapshot for more than 3 minutes, two nodes disagree about a canonical event, or an enabled keeper remains `unfunded`, `error`, or `pending` beyond two poll windows. Public `/v1/hatch-quote` and `/v1/class-state` requests read signed local caches and must never trigger provider work. A stale cache may serve for at most 15 minutes; after that the public endpoint returns 503. Never reset the cursor forward to clear an alert; replay from an earlier block is safe.
 
 ## Graduation keeper
 

@@ -51,7 +51,8 @@ test("rain and cached hatch quote defaults stay inside the provider budget", () 
   assert.equal(configured.confirmations, 2);
   assert.equal(configured.distributionWindowMs, 5_000);
   assert.equal(configured.projectedHatchQuoteCredits, 138_240);
-  assert.equal(configured.projectedBaseCredits, 2_550_240);
+  assert.equal(configured.projectedClassStateCredits, 115_200);
+  assert.equal(configured.projectedBaseCredits, 2_665_440);
   assert.doesNotThrow(() => validateEnv({ ...valid, VERSUS_RAIN_POLL_MS: undefined }));
 });
 
@@ -76,7 +77,7 @@ test("graduation keeper is opt-in and cannot reuse the rain attestor", () => {
   });
   assert.equal(configured.graduationEnabled, true);
   assert.notEqual(configured.graduationKeeper, configured.attestor);
-  assert.equal(configured.projectedBaseCredits, (Math.ceil(86_400_000 / 300_000) * 495) + 138_240);
+  assert.equal(configured.projectedBaseCredits, (Math.ceil(86_400_000 / 300_000) * 495) + 138_240 + 115_200);
 });
 
 test("bootstrap address is deterministic from domain and peer ID", () => {
@@ -97,8 +98,10 @@ test("deployment keeps stock nwaku and all operator APIs host-only", () => {
   assert.match(compose, /--staticnode=/);
   assert.match(compose, /VERSUS_RPC_DAILY_CREDIT_BUDGET/);
   assert.match(compose, /VERSUS_HATCH_QUOTE_REFRESH_MS/);
+  assert.match(compose, /VERSUS_CLASS_STATE_REFRESH_MS/);
   assert.match(compose, /VERSUS_GRADUATION_ENABLED/);
   assert.match(compose, /VERSUS_GRADUATION_KEEPER_PRIVATE_KEY/);
   assert.match(caddy, /handle \/v1\/hatch-quote[\s\S]*reverse_proxy versus-node:8787/);
+  assert.match(caddy, /handle \/v1\/class-state[\s\S]*reverse_proxy versus-node:8787/);
   assert.doesNotMatch(caddy, /handle \/(?:health|metrics)(?:\s|\{)/);
 });

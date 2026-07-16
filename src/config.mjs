@@ -32,13 +32,17 @@ export function loadNodeConfig(env = process.env) {
   const hatchQuoteValidMs = integer(env, "VERSUS_HATCH_QUOTE_VALID_MS", 180_000, hatchQuoteRefreshMs, 86_400_000);
   const hatchQuoteStaleMs = integer(env, "VERSUS_HATCH_QUOTE_STALE_MS", 900_000, hatchQuoteValidMs, 86_400_000);
   const hatchQuoteBufferBps = integer(env, "VERSUS_HATCH_QUOTE_BUFFER_BPS", 300, 200, 300);
+  const classStateRefreshMs = integer(env, "VERSUS_CLASS_STATE_REFRESH_MS", 60_000, 10_000, 86_400_000);
+  const classStateValidMs = integer(env, "VERSUS_CLASS_STATE_VALID_MS", 180_000, classStateRefreshMs, 86_400_000);
+  const classStateStaleMs = integer(env, "VERSUS_CLASS_STATE_STALE_MS", 900_000, classStateValidMs, 86_400_000);
   const dailyCreditBudget = integer(env, "VERSUS_RPC_DAILY_CREDIT_BUDGET", 3_000_000, 100_000, 1_000_000_000);
   const rpcCreditsPerSecond = integer(env, "VERSUS_RPC_CREDITS_PER_SECOND", 500, 255, 1_000_000);
   const projectedCreditsPerPoll = 335 + (graduationEnabled ? 160 : 0);
   const quoteRefreshesPerDay = hatchQuoteEnabled ? Math.ceil(86_400_000 / hatchQuoteRefreshMs) : 0;
   const quoteFullScansPerDay = hatchQuoteEnabled ? Math.ceil(86_400_000 / hatchQuoteFullScanMs) : 0;
   const projectedHatchQuoteCredits = (quoteRefreshesPerDay + (quoteFullScansPerDay * 2)) * 80;
-  const projectedBaseCredits = (Math.ceil(86_400_000 / pollMs) * projectedCreditsPerPoll) + projectedHatchQuoteCredits;
+  const projectedClassStateCredits = Math.ceil(86_400_000 / classStateRefreshMs) * 80;
+  const projectedBaseCredits = (Math.ceil(86_400_000 / pollMs) * projectedCreditsPerPoll) + projectedHatchQuoteCredits + projectedClassStateCredits;
   if (projectedBaseCredits > dailyCreditBudget) {
     throw new Error(`rain polling projects ${projectedBaseCredits} credits/day above budget ${dailyCreditBudget}`);
   }
@@ -77,6 +81,10 @@ export function loadNodeConfig(env = process.env) {
     hatchQuoteStaleMs,
     hatchQuoteBufferBps,
     projectedHatchQuoteCredits,
+    classStateRefreshMs,
+    classStateValidMs,
+    classStateStaleMs,
+    projectedClassStateCredits,
     graduationEnabled,
     graduationPrivateKey,
     graduationKeeper,
@@ -101,6 +109,9 @@ export function loadNodeConfig(env = process.env) {
     ),
     hatchQuoteCachePath: path.resolve(
       env.VERSUS_HATCH_QUOTE_CACHE_PATH || path.join(path.dirname(statePath), "hatch-quote.json"),
+    ),
+    classStateCachePath: path.resolve(
+      env.VERSUS_CLASS_STATE_CACHE_PATH || path.join(path.dirname(statePath), "class-state.json"),
     ),
     healthPort: integer(env, "VERSUS_NODE_HEALTH_PORT", 8787, 1, 65_535),
   });

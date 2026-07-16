@@ -57,7 +57,7 @@ workflow rather than putting values directly on a command line.
 
 Copy `backend.hcl.example` to `backend.hcl` and
 `terraform.tfvars.example` to `terraform.tfvars`. Both local files are ignored.
-Set the hosted zone, immutable repository ref, domains, regions, the three required parameter names per node, any explicitly enabled keeper parameter, opposite relay PeerIDs, canonical Arena address, deployment start block, 12-second rain polling, quote refresh/scan/cache intervals, confirmations, and provider credit limits. The defaults project 2,550,240 provider credits per node per day before an optional graduation keeper and throttle bursts to 500 credits per second.
+Set the hosted zone, immutable repository ref, domains, regions, the three required parameter names per node, any explicitly enabled keeper parameter, opposite relay PeerIDs, canonical Arena address, deployment start block, 12-second rain polling, quote refresh/scan/cache intervals, confirmations, and provider credit limits. The defaults project 2,665,440 provider credits per node per day before an optional graduation keeper and throttle bursts to 500 credits per second.
 
 ## 4. Apply
 
@@ -84,7 +84,7 @@ cd /opt/versus-waku-relay
 sudo npm run health
 ```
 
-Confirm each node reports the other as a peer, the verifier cursor advances, projected and actual credits remain under budget, WSS works from outside AWS, and the desktop client receives both a signed postcard and a signed canonical rain window through both bootstrap domains. Confirm each public `/v1/hatch-quote` is signed by that node's configured attestor, refreshes on schedule, survives one failed refresh as stale, and never increments provider requests when fetched. An enabled keeper must additionally report its expected public signer and canonical Arena-derived contract wiring without exposing its key.
+Confirm each node reports the other as a peer, the verifier cursor advances, projected and actual credits remain under budget, WSS works from outside AWS, and the desktop client receives both a signed postcard and a signed canonical rain window through both bootstrap domains. Confirm each public `/v1/hatch-quote` and `/v1/class-state` response is signed by that node's configured attestor, refreshes on schedule, survives one failed refresh as stale, and never increments provider requests when fetched. An enabled keeper must additionally report its expected public signer and canonical Arena-derived contract wiring without exposing its key.
 
 ## Updating
 

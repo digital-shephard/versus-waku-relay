@@ -81,12 +81,16 @@ export function validateEnv(env, { allowPlaceholders = false } = {}) {
   const quoteValidMs = integer(env, "VERSUS_HATCH_QUOTE_VALID_MS", quoteRefreshMs, 86400000, 180000);
   integer(env, "VERSUS_HATCH_QUOTE_STALE_MS", quoteValidMs, 86400000, 900000);
   integer(env, "VERSUS_HATCH_QUOTE_BUFFER_BPS", 200, 300, 300);
+  const classStateRefreshMs = integer(env, "VERSUS_CLASS_STATE_REFRESH_MS", 10000, 86400000, 60000);
+  const classStateValidMs = integer(env, "VERSUS_CLASS_STATE_VALID_MS", classStateRefreshMs, 86400000, 180000);
+  integer(env, "VERSUS_CLASS_STATE_STALE_MS", classStateValidMs, 86400000, 900000);
   const creditsPerPoll = 335 + (graduationEnabled ? 160 : 0);
   const quoteCredits = quoteEnabled
     ? (Math.ceil(86400000 / quoteRefreshMs) + (Math.ceil(86400000 / quoteFullScanMs) * 2)) * 80
     : 0;
-  if ((Math.ceil(86400000 / pollMs) * creditsPerPoll) + quoteCredits > creditBudget) {
-    throw new Error("node poll and hatch quote intervals exceed the RPC daily credit budget");
+  const classStateCredits = Math.ceil(86400000 / classStateRefreshMs) * 80;
+  if ((Math.ceil(86400000 / pollMs) * creditsPerPoll) + quoteCredits + classStateCredits > creditBudget) {
+    throw new Error("node poll and public cache intervals exceed the RPC daily credit budget");
   }
   integer(env, "VERSUS_RAIN_CONFIRMATIONS", 0, 10000, 2);
   integer(env, "VERSUS_RAIN_DISTRIBUTION_MS", 1000, 86400000, 5000);

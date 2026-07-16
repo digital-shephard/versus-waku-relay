@@ -10,6 +10,10 @@
 		reverse_proxy versus-node:8787
 	}
 
+	handle /v1/class-state {
+		reverse_proxy versus-node:8787
+	}
+
 	handle {
 		reverse_proxy nwaku:8000
 	}

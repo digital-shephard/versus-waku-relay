@@ -1,4 +1,5 @@
 import http from "node:http";
+import { ClassStateService } from "./class-state.mjs";
 import { loadNodeConfig } from "./config.mjs";
 import { GraduationKeeper } from "./graduation-keeper.mjs";
 import { GraduationStateStore } from "./graduation-state-store.mjs";
@@ -59,6 +60,15 @@ const hatchQuote = config.hatchQuoteEnabled ? new HatchQuoteService({
   staleMs: config.hatchQuoteStaleMs,
   bufferBps: config.hatchQuoteBufferBps,
 }) : null;
+const classState = new ClassStateService({
+  rpc,
+  privateKey: config.privateKey,
+  chainId: config.chainId,
+  arena: config.arena,
+  cachePath: config.classStateCachePath,
+  validMs: config.classStateValidMs,
+  staleMs: config.classStateStaleMs,
+});
 
 const server = http.createServer((request, response) => {
   if (request.url === "/v1/hatch-quote") {
@@ -84,6 +94,26 @@ const server = http.createServer((request, response) => {
     response.end(request.method === "HEAD" ? undefined : JSON.stringify(quote));
     return;
   }
+  if (request.url === "/v1/class-state") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      response.writeHead(405, { allow: "GET, HEAD" }).end();
+      return;
+    }
+    const state = classState.snapshot();
+    if (!state) {
+      response.writeHead(503, { "content-type": "application/json", "cache-control": "no-store" });
+      response.end(request.method === "HEAD" ? undefined : JSON.stringify({ ok: false, error: "class_state_unavailable" }));
+      return;
+    }
+    response.writeHead(200, {
+      "content-type": "application/json",
+      "cache-control": "public, max-age=15, stale-while-revalidate=120",
+      "access-control-allow-origin": "*",
+      etag: `"${state.signature.slice(2, 18)}"`,
+    });
+    response.end(request.method === "HEAD" ? undefined : JSON.stringify(state));
+    return;
+  }
   if (request.url !== "/health" && request.url !== "/metrics") {
     response.writeHead(404).end();
     return;
@@ -99,6 +129,7 @@ const server = http.createServer((request, response) => {
     rain: indexer.status(),
     graduation: graduationKeeper.status(),
     hatchQuote: hatchQuote?.status() || { available: false, freshness: "disabled" },
+    classState: classState.status(),
     ...(request.url === "/metrics" ? {
       chainId: config.chainId,
       arena: config.arena,
@@ -141,10 +172,24 @@ const hatchQuoteTimer = hatchQuote ? setInterval(() => {
   });
 }, config.hatchQuoteRefreshMs) : null;
 hatchQuoteTimer?.unref?.();
+async function refreshClassState() {
+  try {
+    const status = indexer.status();
+    const nextBlock = BigInt(status.nextBlock);
+    const confirmedBlock = nextBlock > 0n ? nextBlock - 1n : 0n;
+    await classState.refresh({ confirmedBlock });
+  } catch (error) {
+    process.stderr.write(`${JSON.stringify({ level: "error", event: "class_state_refresh", message: error.message })}\n`);
+  }
+}
+await refreshClassState();
+const classStateTimer = setInterval(refreshClassState, config.classStateRefreshMs);
+classStateTimer.unref?.();
 
 async function shutdown() {
   clearInterval(timer);
   if (hatchQuoteTimer) clearInterval(hatchQuoteTimer);
+  clearInterval(classStateTimer);
   await indexer.running?.catch(() => {});
   await graduationKeeper.running?.catch(() => {});
   server.close(() => process.exit(0));
