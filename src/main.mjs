@@ -8,6 +8,7 @@ import { RainIndexer } from "./rain-indexer.mjs";
 import { CreditMeteredRpc } from "./rpc.mjs";
 import { StateStore } from "./state-store.mjs";
 import { WakuRestPublisher } from "./waku-rest.mjs";
+import { fxTransportStatus } from "./fx-transport.mjs";
 
 const config = loadNodeConfig();
 const rpc = new CreditMeteredRpc(config.rpcUrl, {
@@ -130,6 +131,7 @@ const server = http.createServer((request, response) => {
     graduation: graduationKeeper.status(),
     hatchQuote: hatchQuote?.status() || { available: false, freshness: "disabled" },
     classState: classState.status(),
+    fxTransport: fxTransportStatus(),
     ...(request.url === "/metrics" ? {
       chainId: config.chainId,
       arena: config.arena,

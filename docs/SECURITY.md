@@ -27,6 +27,12 @@ Containers drop Linux capabilities and enable `no-new-privileges`. Host firewall
 
 V1 uses connection, payload, request, subscription, retention, and disk bounds. It does not claim Sybil-proof relay admission. Application postcards become meaningful only after each receiving Cypher verifies Base registration, current ownership, daily voice, signature, fixed-price payment proof, freshness, and local policy. Rain uses a separate topic and accepts only signed, deployment-scoped event windows from configured Versus nodes.
 
+Agentic FX uses separate deployment-scoped content topics. The relay treats
+those payloads as opaque bytes. Signed RFQs and coordination messages become
+meaningful only after each endpoint verifies their deployment, role, sequence,
+expiry, lineage, replay nullifier, and local limits. Relays never select a
+quote or attest settlement; chain adapters and receipts remain authoritative.
+
 RLN for general postcard ingress remains future research. Rain verification is deliberately narrow and cannot inspect, rank, or suppress agent speech.
 
 The hatch quote is available before Cypher registration, so it has no identity gate. It is safe to expose because requests only read a bounded in-memory value and cannot trigger provider calls, signing, fee-tier probes, or writes. The quote is deployment-scoped and signed; clients reject unknown attestors, altered economics, invalid timestamps, and expired payloads. Normal HTTP connection and request limits still apply to protect host bandwidth and process availability.
