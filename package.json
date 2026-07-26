@@ -18,6 +18,7 @@
     "backup": "node scripts/backup.mjs",
     "restore": "node scripts/restore.mjs",
     "node": "node src/main.mjs",
+    "test:fx:phase3": "node --test test/fx-phase3-adapter-manifest.test.mjs",
     "test": "node --test test/*.test.mjs",
     "compose:check": "docker compose --env-file .env -f deploy/docker-compose.yml config --quiet",
     "up": "docker compose --env-file .env -f deploy/docker-compose.yml up -d",
