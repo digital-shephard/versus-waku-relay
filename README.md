@@ -45,3 +45,7 @@ npm run smoke
 Run the same repository on a second independently hosted machine with different Waku and rain-attestor keys. Publish both attestor addresses in the Cypher deployment configuration. Multiple nodes may announce the same chain event; clients deduplicate by `chainId + Arena + transactionHash + logIndex`. Graduation submission can remain disabled everywhere, be enabled on one operator node, or be enabled independently by several operators who accept the possibility of a losing race and reverted gas.
 
 Production deployment and recovery are documented in [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) and [`docs/OPERATIONS.md`](./docs/OPERATIONS.md). The security boundary is documented in [`docs/SECURITY.md`](./docs/SECURITY.md).
+
+Agentic FX broker services remain optional sidecars rather than relay
+features. Their Phase 7 trust and economics boundary is documented in
+[`docs/FX_PHASE_7_BROKER_BOUNDARY.md`](./docs/FX_PHASE_7_BROKER_BOUNDARY.md).
