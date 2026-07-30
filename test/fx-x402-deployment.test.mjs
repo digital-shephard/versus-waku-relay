@@ -118,6 +118,7 @@ test("AWS rollout reads scoped SSM secrets without placing the broker key in env
   );
   const enable = read("deploy", "enable-fx-testnet.sh");
   const disable = read("deploy", "disable-fx-testnet.sh");
+  const verify = read("deploy", "verify-fx-testnet.sh");
 
   assert.match(moduleMain, /var\.fx_broker_key_parameter_name/);
   assert.match(moduleMain, /var\.fx_base_sepolia_rpc_parameter_name/);
@@ -132,4 +133,22 @@ test("AWS rollout reads scoped SSM secrets without placing the broker key in env
   assert.doesNotMatch(enable, /echo "\$broker_key"|set -x/);
   assert.match(disable, /stop fx-broker/);
   assert.doesNotMatch(disable, /rm -rf|docker compose[\s\S]*down/);
+  assert.match(verify, /VERSUS_EXPECTED_REPOSITORY_REF/);
+  assert.match(verify, /provenance\.manifestSha256/);
+  assert.match(verify, /provenance\.tarballSha256/);
+  assert.match(verify, /ps --status running --services/);
+  assert.match(verify, /request OPTIONS/);
+  assert.doesNotMatch(verify, /set -x|with-decryption|private.key/i);
+});
+
+test("public acceptance checks two distinct Waku identities and bounded FX preflight", () => {
+  const acceptance = read("scripts", "fx-public-acceptance.mjs");
+
+  assert.match(acceptance, /domains\.length !== 2/);
+  assert.match(acceptance, /new Set\(domains\)\.size !== 2/);
+  assert.match(acceptance, /AbortSignal\.timeout\(timeoutMs\)/);
+  assert.match(acceptance, /method: "OPTIONS"/);
+  assert.match(acceptance, /access-control-request-method": "POST"/);
+  assert.match(acceptance, /same Waku peer identity/);
+  assert.doesNotMatch(acceptance, /privateKey|sourceLock|secret/i);
 });

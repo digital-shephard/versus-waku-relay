@@ -15,6 +15,7 @@
     "preflight": "node scripts/preflight.mjs",
     "health": "node scripts/health.mjs",
     "smoke": "node scripts/smoke.mjs",
+    "accept:fx:public": "node scripts/fx-public-acceptance.mjs",
     "backup": "node scripts/backup.mjs",
     "restore": "node scripts/restore.mjs",
     "node": "node src/main.mjs",

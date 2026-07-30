@@ -67,6 +67,26 @@ curl -i -X OPTIONS https://relay-a.versuscypher.com/v1/fx/swaps
 curl -i -X OPTIONS https://relay-b.versuscypher.com/v1/fx/swaps
 ```
 
+After each host starts, verify its exact checkout, frozen broker package,
+container health, loopback health, and public route:
+
+```sh
+sudo env \
+  VERSUS_EXPECTED_REPOSITORY_REF=<full-approved-commit> \
+  /opt/versus-waku-relay/deploy/verify-fx-testnet.sh
+```
+
+After both hosts pass independently, verify that the public domains expose
+two distinct Waku identities and two live HTTPS FX routes:
+
+```sh
+npm run accept:fx:public
+```
+
+This probe is intentionally read-only. It never publishes an RFQ or moves
+testnet funds. Economic acceptance remains a separate explicit requester and
+dealer test after both sidecars pass the infrastructure gate.
+
 Then complete one tiny Base Sepolia to Arbitrum Sepolia request through each
 host using an independently running dealer. Verify the requester funds its
 own source HTLC, the arbitrary destination recipient needs no gas, the broker

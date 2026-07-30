@@ -55,6 +55,12 @@ other broker and both blind Waku relays available. Never delete
 `/var/lib/versus-fx-broker` merely to clear a failed request; disable the
 sidecar and preserve the journal for recovery.
 
+Run `deploy/verify-fx-testnet.sh` with the exact approved repository commit
+after each rollout. Then run `npm run accept:fx:public` from an independent
+machine. If either gate fails, run `deploy/disable-fx-testnet.sh` on only the
+affected host. That stops the broker without stopping nwaku, the Versus node,
+or Caddy and keeps the broker journal available for diagnosis and recovery.
+
 ## Incident priorities
 
 1. Preserve node and attestor identity; if a graduation keeper is enabled, immediately disable or rotate it and move any remaining keeper-only gas funds after host compromise.
