@@ -7,9 +7,17 @@ npm run health
 docker compose --env-file .env -f deploy/docker-compose.yml ps
 docker compose --env-file .env -f deploy/docker-compose.yml logs --tail=200 nwaku
 docker compose --env-file .env -f deploy/docker-compose.yml logs --tail=200 versus-node
+docker compose --profile fx-testnet --env-file .env -f deploy/docker-compose.yml logs --tail=200 fx-broker
 ```
 
 Monitor process restarts, connected peers, LightPush/Filter/Store availability, the verifier block cursor, last successful poll, daily estimated RPC credits, signed penny count, hatch-quote freshness and selected fee tier, signed class-state freshness and block, optional keeper state, Store size, disk, memory, and TLS expiry. Do not collect postcard bodies into a secondary analytics database.
+
+When FX is enabled, also monitor loopback broker health, Waku readiness,
+active RFQs, per-code rejections, journal write failures, Base Sepolia and
+Arbitrum Sepolia RPC freshness, HTTP 429 volume, and request latency. Do not
+log private keys, raw secrets, signed funding transactions, wallet archives,
+or full requester addresses. Broker unavailability must not restart nwaku or
+the Versus node.
 
 The verifier returns `/health` and `/metrics` on host loopback. Alert when the cursor stops advancing for two poll windows, RPC credit use approaches its configured daily or per-second budget, Waku publication fails, both nodes lack a fresh hatch quote or class snapshot for more than 3 minutes, two nodes disagree about a canonical event, or an enabled keeper remains `unfunded`, `error`, or `pending` beyond two poll windows. Public `/v1/hatch-quote` and `/v1/class-state` requests read signed local caches and must never trigger provider work. A stale cache may serve for at most 15 minutes; after that the public endpoint returns 503. Never reset the cursor forward to clear an alert; replay from an earlier block is safe.
 
@@ -40,6 +48,12 @@ The displaced pre-restore directory is retained for manual rollback. Store is te
 5. Upgrade one host and observe it while the other remains available.
 6. Roll forward the second host only after client acceptance.
 7. Roll back using the prior image and data backup if database migration is incompatible.
+
+For the FX sidecar, verify `broker/PROVENANCE.json`, the tarball SHA-256, and
+the frozen manifest before building. Upgrade one broker at a time. Keep the
+other broker and both blind Waku relays available. Never delete
+`/var/lib/versus-fx-broker` merely to clear a failed request; disable the
+sidecar and preserve the journal for recovery.
 
 ## Incident priorities
 

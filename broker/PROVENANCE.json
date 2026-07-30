@@ -1,0 +1,14 @@
+{
+  "schema": "versus-fx-broker-runtime-provenance",
+  "schemaVersion": 1,
+  "sourceRepository": "https://github.com/digital-shephard/versus-cypher.git",
+  "sourceCommit": "e9aa3ab312e57e3a7ad220af4670667bf7261260",
+  "package": "@versus/network@0.1.0",
+  "tarball": "vendor/versus-network-0.1.0.tgz",
+  "tarballBytes": 146106,
+  "tarballSha256": "9b308ef9d69976db0cc1f340406d94bfbac9d698b3ace8bf8b3921da8174af90",
+  "manifest": "../config/fx-v3-public-testnet.json",
+  "manifestSha256": "6e7fd884032a4353238f5995875f9d44962075076bfb4e6dbcf56134e73a0023",
+  "deploymentId": "0x1edf9c4dca5cbcb8b1875f4ce950844237258367d51e5d02dc3de577b3088494",
+  "coordinationDomain": "0x6d2d3f9784460521d35605b450e5a46fc1c068df7724265c8f12fec7f1693b2c"
+}

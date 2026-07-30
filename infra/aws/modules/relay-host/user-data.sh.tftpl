@@ -12,6 +12,8 @@ systemctl enable --now docker
 
 install -d -m 0755 /opt/versus-waku-relay /var/lib/versus-waku /var/lib/versus-waku-caddy/data /var/lib/versus-waku-caddy/config
 install -d -o 1000 -g 1000 -m 0700 /var/lib/versus-node
+install -d -o 1000 -g 1000 -m 0700 /var/lib/versus-fx-broker
+install -d -m 0700 /var/lib/versus-fx-secrets
 
 if [[ ! -d /opt/versus-waku-relay/.git ]]; then
   git clone "${repository_url}" /opt/versus-waku-relay
@@ -41,6 +43,29 @@ base_rpc_url=$(aws ssm get-parameter --region "${region}" --name "${base_rpc_url
 if [[ ! "$rain_attestor_key" =~ ^0x[0-9a-fA-F]{64}$ ]] || [[ ! "$base_rpc_url" =~ ^https:// ]]; then
   echo "Versus node attestor key or Base RPC URL is invalid" >&2
   exit 1
+fi
+
+fx_broker_key=""
+fx_base_sepolia_rpc_url="https://disabled.invalid"
+fx_arbitrum_sepolia_rpc_url="https://disabled.invalid"
+if [[ "${fx_broker_enabled}" == "true" ]]; then
+  fx_broker_key=$(aws ssm get-parameter --region "${region}" --name "${fx_broker_key_parameter_name}" --with-decryption --query Parameter.Value --output text)
+  fx_base_sepolia_rpc_url=$(aws ssm get-parameter --region "${region}" --name "${fx_base_sepolia_rpc_parameter_name}" --with-decryption --query Parameter.Value --output text)
+  fx_arbitrum_sepolia_rpc_url=$(aws ssm get-parameter --region "${region}" --name "${fx_arbitrum_sepolia_rpc_parameter_name}" --with-decryption --query Parameter.Value --output text)
+  if (
+    [[ ! "$fx_broker_key" =~ ^0x[0-9a-fA-F]{64}$ ]] ||
+    [[ ! "$fx_base_sepolia_rpc_url" =~ ^https:// ]] ||
+    [[ ! "$fx_arbitrum_sepolia_rpc_url" =~ ^https:// ]]
+  ); then
+    echo "Versus FX broker key or testnet RPC URL is invalid" >&2
+    exit 1
+  fi
+  if [[ "$${fx_broker_key,,}" == "$${rain_attestor_key,,}" ]]; then
+    echo "Versus FX broker must not reuse the rain attestor key" >&2
+    exit 1
+  fi
+  install -o 1000 -g 1000 -m 0400 /dev/null /var/lib/versus-fx-secrets/broker-key
+  printf '%s\n' "$fx_broker_key" > /var/lib/versus-fx-secrets/broker-key
 fi
 
 graduation_keeper_key=""
@@ -78,6 +103,21 @@ VERSUS_WAKU_METRICS_PORT=18008
 VERSUS_WAKU_DATA_DIR=/var/lib/versus-waku
 CADDY_DATA_DIR=/var/lib/versus-waku-caddy/data
 CADDY_CONFIG_DIR=/var/lib/versus-waku-caddy/config
+VERSUS_FX_ENABLED=${fx_broker_enabled}
+VERSUS_FX_BROKER_IMAGE=versus-fx-broker:0.1.0
+VERSUS_FX_DEPLOYMENT_ID=${fx_deployment_id}
+VERSUS_FX_WAKU_PEERS=${fx_waku_peers}
+VERSUS_FX_OBSERVATION_WINDOW_MS=${fx_observation_window_ms}
+VERSUS_FX_MAX_ACTIVE_RFQS=${fx_max_active_rfqs}
+VERSUS_FX_HTTP_ROUTES_PER_MINUTE_PER_IP=12
+VERSUS_FX_HTTP_MAX_CONCURRENT_ROUTES=16
+VERSUS_FX_HTTP_REQUESTS_PER_MINUTE_PER_IP=${fx_x402_requests_per_minute_per_ip}
+VERSUS_FX_HTTP_MAX_CONCURRENT_REQUESTS=${fx_max_concurrent_x402_requests}
+VERSUS_FX_BASE_SEPOLIA_RPC_URL=$fx_base_sepolia_rpc_url
+VERSUS_FX_ARBITRUM_SEPOLIA_RPC_URL=$fx_arbitrum_sepolia_rpc_url
+VERSUS_FX_BROKER_DATA_DIR=/var/lib/versus-fx-broker
+VERSUS_FX_BROKER_KEY_PATH=/var/lib/versus-fx-secrets/broker-key
+VERSUS_FX_BROKER_HEALTH_PORT=18788
 VERSUS_BASE_RPC_URL=$base_rpc_url
 VERSUS_CHAIN_ID=${chain_id}
 VERSUS_ARENA_ADDRESS=${arena_address}
@@ -104,6 +144,7 @@ VERSUS_NODE_DATA_DIR=/var/lib/versus-node
 VERSUS_NODE_HEALTH_PORT=18787
 EOF
 chmod 0600 /opt/versus-waku-relay/.env
+unset fx_broker_key rain_attestor_key graduation_keeper_key
 
 cat > /etc/systemd/system/versus-waku-relay.service <<'EOF'
 [Unit]
@@ -116,7 +157,7 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/opt/versus-waku-relay
-ExecStart=/usr/bin/docker compose --env-file /opt/versus-waku-relay/.env -f /opt/versus-waku-relay/deploy/docker-compose.yml up -d --remove-orphans
+ExecStart=/usr/bin/docker compose ${fx_compose_profile} --env-file /opt/versus-waku-relay/.env -f /opt/versus-waku-relay/deploy/docker-compose.yml up -d --remove-orphans
 ExecStop=/usr/bin/docker compose --env-file /opt/versus-waku-relay/.env -f /opt/versus-waku-relay/deploy/docker-compose.yml down
 TimeoutStartSec=0
 

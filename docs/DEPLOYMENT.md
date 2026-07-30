@@ -26,6 +26,58 @@ Graduation submission is not part of relay availability and remains disabled by 
 
 Never expose ports 8645 or 8008 publicly. Never use the deterministic keys from `deploy/local-compose.yml`. Never use `latest` image tags. Upgrades require reading every intermediate nwaku migration note and repeating the controlled tests.
 
+## Public-testnet FX sidecar
+
+This is testnet-only. Do not put mainnet RPCs, production funds, dealer
+inventory, or a Cypher key on either relay.
+
+For each host create three region-local `SecureString` parameters:
+
+```text
+/versus/production/relay-a/fx-broker-key
+/versus/production/relay-a/fx-base-sepolia-rpc-url
+/versus/production/relay-a/fx-arbitrum-sepolia-rpc-url
+```
+
+Use the corresponding `relay-b` names in its region. Broker keys must be
+unique per host and distinct from rain, keeper, deployment, requester, dealer,
+and Waku identities. Configure `fx.enabled = true`, freeze the repository to
+the reviewed commit, run `terraform plan`, and apply only the IAM policy
+changes. Existing hosts ignore changed user data by design.
+
+After the reviewed commit is present on a host, enable through SSM:
+
+```sh
+sudo AWS_REGION=<region> \
+  FX_BROKER_KEY_PARAMETER_NAME=<broker-key-parameter> \
+  FX_BASE_SEPOLIA_RPC_PARAMETER_NAME=<base-rpc-parameter> \
+  FX_ARBITRUM_SEPOLIA_RPC_PARAMETER_NAME=<arbitrum-rpc-parameter> \
+  /opt/versus-waku-relay/deploy/enable-fx-testnet.sh
+```
+
+The script fetches secrets directly from SSM, writes the broker key to a
+mode-0400 file, preserves any existing broker journal, builds the vendored
+runtime, starts the `fx-testnet` profile, and waits on loopback health. It
+never writes the private key into `.env`.
+
+Validate both public hosts:
+
+```sh
+curl -i -X OPTIONS https://relay-a.versuscypher.com/v1/fx/swaps
+curl -i -X OPTIONS https://relay-b.versuscypher.com/v1/fx/swaps
+```
+
+Then complete one tiny Base Sepolia to Arbitrum Sepolia request through each
+host using an independently running dealer. Verify the requester funds its
+own source HTLC, the arbitrary destination recipient needs no gas, the broker
+fee is zero, and all lock/claim receipts match the frozen V3 manifest.
+
+Rollback stops only the sidecar and preserves recovery data:
+
+```sh
+sudo /opt/versus-waku-relay/deploy/disable-fx-testnet.sh
+```
+
 ## Cloud independence
 
 The friend-ready gate requires two independently reachable hosts. Prefer separate providers or at least separate failure domains. One Compose project containing two containers on one VM is useful for validation but is not service redundancy.

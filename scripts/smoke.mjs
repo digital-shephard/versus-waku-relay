@@ -31,8 +31,27 @@ if (String(env.VERSUS_HATCH_QUOTE_ENABLED ?? "true").toLowerCase() !== "false") 
   hatchQuote = { enabled: true, signer, freshness: quote.freshness, feeTier: quote.feeTier };
 }
 
+let fxBroker = { enabled: false };
+if (String(env.VERSUS_FX_ENABLED || "false").toLowerCase() === "true") {
+  const fxResponse = await fetch(
+    `https://${env.PUBLIC_DOMAIN}/v1/fx/swaps`,
+    {
+      method: "OPTIONS",
+      signal: AbortSignal.timeout(10_000),
+    }
+  );
+  if (fxResponse.status !== 204) {
+    throw new Error(`public FX endpoint preflight failed: HTTP ${fxResponse.status}`);
+  }
+  fxBroker = {
+    enabled: true,
+    endpoint: `https://${env.PUBLIC_DOMAIN}/v1/fx/swaps`,
+  };
+}
+
 console.log(JSON.stringify({
   healthy: true,
   publicRelay: `https://${env.PUBLIC_DOMAIN}/healthz`,
   hatchQuote,
+  fxBroker,
 }, null, 2));

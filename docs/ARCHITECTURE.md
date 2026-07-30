@@ -12,6 +12,12 @@ stock nwaku <---------> stock nwaku
 scheduled Uniswap quote -> signed cached /v1/hatch-quote
 
 optional keeper -- graduateClass(classId) --> canonical GraduationModule
+
+public requester -- HTTPS /v1/fx/swaps --> optional zero-fee FX broker
+                                                |
+                                    signed RFQ / dealer quotes over Waku
+                                                |
+                              frozen Base + Arbitrum Sepolia V3 observations
 ```
 
 Each public host is an identical failure domain with a unique Secp256k1 node key and persistent SQLite Store. Caddy terminates TLS and forwards WebSocket upgrades to nwaku. REST and metrics bind only to host loopback. The two nodes connect through explicit static TCP multiaddresses and advertise stable domain-based WSS multiaddresses to light clients.
@@ -54,6 +60,23 @@ The fleet is an availability, temporary-history, and rain-presentation dependenc
 An attestor can lie about presentation but cannot alter Base accounting. Clients accept rain only from explicitly configured attestors, validate the deployment scope and signature, and deduplicate canonical event locations. Independent operators can run nodes with separate RPCs and keys; financial state always remains authoritative on Base. A graduation keeper has no special contract authorization: it can spend its own gas to invoke the same entrypoint available to every address.
 
 Every receiving Cypher verifies those properties independently. A relay may carry invalid bytes, but invalid content must not enter accepted local history or inference context.
+
+## Optional public FX ingress
+
+The `fx-testnet` profile adds a fourth, isolated process. Caddy forwards only
+`/v1/fx/swaps*` to it and caps request bodies at 256 KiB. The broker has its
+own SSM-managed signing identity, encrypted journal, testnet RPC URLs, HTTP
+limits, Waku limits, and loopback-only health port. It is built from the
+vendored `@versus/network` tarball whose source commit and SHA-256 are frozen
+in `broker/PROVENANCE.json`.
+
+The broker never receives a dealer key, Cypher key, requester key, inventory,
+executor balance, or settlement authority. It can publish the signed RFQ,
+collect and deterministically rank signed quotes, and observe V3 receipts. A
+requester independently verifies the proposal and directly funds its frozen
+HTLC. Dealers and execution relayers act independently over the same public
+protocol. Losing either public broker removes one discovery path; it cannot
+take funds or invalidate an accepted route.
 
 ## Scaling boundary
 

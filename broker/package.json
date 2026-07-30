@@ -1,0 +1,14 @@
+{
+  "name": "versus-fx-broker-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "@versus/network": "file:vendor/versus-network-0.1.0.tgz"
+  },
+  "overrides": {
+    "@waku/core": {
+      "uuid": "^11.1.1"
+    }
+  }
+}

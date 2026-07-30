@@ -15,6 +15,9 @@ locals {
     var.node_key_parameter_name,
     var.rain_attestor_key_parameter_name,
     var.base_rpc_url_parameter_name,
+    var.fx_broker_enabled ? var.fx_broker_key_parameter_name : null,
+    var.fx_broker_enabled ? var.fx_base_sepolia_rpc_parameter_name : null,
+    var.fx_broker_enabled ? var.fx_arbitrum_sepolia_rpc_parameter_name : null,
     var.graduation_keeper_enabled ? var.graduation_keeper_key_parameter_name : null,
   ])
   parameter_arns = [
@@ -187,32 +190,43 @@ resource "aws_instance" "relay" {
   }
 
   user_data = templatefile("${path.module}/user-data.sh.tftpl", {
-    region                               = data.aws_region.current.region
-    public_ip                            = aws_eip.relay.public_ip
-    domain                               = var.domain
-    node_key_parameter_name              = var.node_key_parameter_name
-    rain_attestor_key_parameter_name     = var.rain_attestor_key_parameter_name
-    base_rpc_url_parameter_name          = var.base_rpc_url_parameter_name
-    graduation_keeper_enabled            = var.graduation_keeper_enabled
-    graduation_keeper_key_parameter_name = var.graduation_keeper_key_parameter_name != null ? var.graduation_keeper_key_parameter_name : ""
-    chain_id                             = var.chain_id
-    arena_address                        = var.arena_address
-    rain_start_block                     = var.rain_start_block
-    rain_poll_ms                         = var.rain_poll_ms
-    rain_confirmations                   = var.rain_confirmations
-    rain_distribution_ms                 = var.rain_distribution_ms
-    rpc_daily_credit_budget              = var.rpc_daily_credit_budget
-    rpc_credits_per_second               = var.rpc_credits_per_second
-    graduation_submission_delay_ms       = var.graduation_submission_delay_ms
-    graduation_rebroadcast_ms            = var.graduation_rebroadcast_ms
-    graduation_max_gas_limit             = var.graduation_max_gas_limit
-    graduation_max_execution_fee_wei     = var.graduation_max_execution_fee_wei
-    static_peer                          = var.static_peer
-    repository_url                       = var.repository_url
-    repository_ref                       = var.repository_ref
-    store_seconds                        = var.store_seconds
-    store_capacity                       = var.store_capacity
-    store_size                           = var.store_size
+    region                                 = data.aws_region.current.region
+    public_ip                              = aws_eip.relay.public_ip
+    domain                                 = var.domain
+    node_key_parameter_name                = var.node_key_parameter_name
+    rain_attestor_key_parameter_name       = var.rain_attestor_key_parameter_name
+    base_rpc_url_parameter_name            = var.base_rpc_url_parameter_name
+    fx_broker_enabled                      = var.fx_broker_enabled
+    fx_broker_key_parameter_name           = var.fx_broker_key_parameter_name != null ? var.fx_broker_key_parameter_name : ""
+    fx_base_sepolia_rpc_parameter_name     = var.fx_base_sepolia_rpc_parameter_name != null ? var.fx_base_sepolia_rpc_parameter_name : ""
+    fx_arbitrum_sepolia_rpc_parameter_name = var.fx_arbitrum_sepolia_rpc_parameter_name != null ? var.fx_arbitrum_sepolia_rpc_parameter_name : ""
+    fx_deployment_id                       = var.fx_deployment_id
+    fx_waku_peers                          = var.fx_waku_peers
+    fx_observation_window_ms               = var.fx_observation_window_ms
+    fx_max_active_rfqs                     = var.fx_max_active_rfqs
+    fx_x402_requests_per_minute_per_ip     = var.fx_x402_requests_per_minute_per_ip
+    fx_max_concurrent_x402_requests        = var.fx_max_concurrent_x402_requests
+    fx_compose_profile                     = var.fx_broker_enabled ? "--profile fx-testnet" : ""
+    graduation_keeper_enabled              = var.graduation_keeper_enabled
+    graduation_keeper_key_parameter_name   = var.graduation_keeper_key_parameter_name != null ? var.graduation_keeper_key_parameter_name : ""
+    chain_id                               = var.chain_id
+    arena_address                          = var.arena_address
+    rain_start_block                       = var.rain_start_block
+    rain_poll_ms                           = var.rain_poll_ms
+    rain_confirmations                     = var.rain_confirmations
+    rain_distribution_ms                   = var.rain_distribution_ms
+    rpc_daily_credit_budget                = var.rpc_daily_credit_budget
+    rpc_credits_per_second                 = var.rpc_credits_per_second
+    graduation_submission_delay_ms         = var.graduation_submission_delay_ms
+    graduation_rebroadcast_ms              = var.graduation_rebroadcast_ms
+    graduation_max_gas_limit               = var.graduation_max_gas_limit
+    graduation_max_execution_fee_wei       = var.graduation_max_execution_fee_wei
+    static_peer                            = var.static_peer
+    repository_url                         = var.repository_url
+    repository_ref                         = var.repository_ref
+    store_seconds                          = var.store_seconds
+    store_capacity                         = var.store_capacity
+    store_size                             = var.store_size
   })
 
   depends_on = [aws_route_table_association.public]

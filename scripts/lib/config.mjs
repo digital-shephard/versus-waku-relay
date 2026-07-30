@@ -70,6 +70,63 @@ export function validateEnv(env, { allowPlaceholders = false } = {}) {
     const keeper = new Wallet(env.VERSUS_GRADUATION_KEEPER_PRIVATE_KEY).address;
     if (attestor === keeper) throw new Error("graduation keeper must not reuse the rain attestor key");
   }
+  const fxEnabled = boolean(env, "VERSUS_FX_ENABLED", false);
+  if (fxEnabled) {
+    if (!/^0x[a-fA-F0-9]{64}$/.test(env.VERSUS_FX_DEPLOYMENT_ID || "")) {
+      throw new Error("VERSUS_FX_DEPLOYMENT_ID must be a bytes32 hash when FX is enabled");
+    }
+    for (const name of [
+      "VERSUS_FX_BASE_SEPOLIA_RPC_URL",
+      "VERSUS_FX_ARBITRUM_SEPOLIA_RPC_URL",
+    ]) {
+      if (!/^https:\/\//.test(env[name] || "")) {
+        throw new Error(`${name} must use HTTPS when FX is enabled`);
+      }
+    }
+    if (!env.VERSUS_FX_BROKER_KEY_PATH) {
+      throw new Error("VERSUS_FX_BROKER_KEY_PATH is required when FX is enabled");
+    }
+    const peers = String(env.VERSUS_FX_WAKU_PEERS || "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+    if (
+      peers.length < 2 ||
+      peers.some((value) => !/^\/[^\s]+\/p2p\/[^/\s]+$/.test(value))
+    ) {
+      throw new Error("VERSUS_FX_WAKU_PEERS requires at least two complete peer multiaddresses");
+    }
+    integer(env, "VERSUS_FX_OBSERVATION_WINDOW_MS", 250, 60000, 20000);
+    integer(env, "VERSUS_FX_MAX_ACTIVE_RFQS", 1, 256, 32);
+    integer(
+      env,
+      "VERSUS_FX_HTTP_ROUTES_PER_MINUTE_PER_IP",
+      1,
+      60,
+      12
+    );
+    integer(
+      env,
+      "VERSUS_FX_HTTP_MAX_CONCURRENT_ROUTES",
+      1,
+      64,
+      16
+    );
+    integer(
+      env,
+      "VERSUS_FX_HTTP_REQUESTS_PER_MINUTE_PER_IP",
+      4,
+      600,
+      120
+    );
+    integer(
+      env,
+      "VERSUS_FX_HTTP_MAX_CONCURRENT_REQUESTS",
+      1,
+      64,
+      16
+    );
+  }
   integer(env, "VERSUS_CHAIN_ID", 1, Number.MAX_SAFE_INTEGER);
   integer(env, "VERSUS_RAIN_START_BLOCK", 0, Number.MAX_SAFE_INTEGER);
   const pollMs = integer(env, "VERSUS_RAIN_POLL_MS", 10000, 86400000, 12000);

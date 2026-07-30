@@ -43,6 +43,50 @@ variable "base_rpc_url_parameter_name" {
   type = string
 }
 
+variable "fx_broker_enabled" {
+  type    = bool
+  default = false
+}
+
+variable "fx_broker_key_parameter_name" {
+  type    = string
+  default = null
+}
+
+variable "fx_base_sepolia_rpc_parameter_name" {
+  type    = string
+  default = null
+}
+
+variable "fx_arbitrum_sepolia_rpc_parameter_name" {
+  type    = string
+  default = null
+}
+
+variable "fx_deployment_id" {
+  type = string
+}
+
+variable "fx_waku_peers" {
+  type = string
+}
+
+variable "fx_observation_window_ms" {
+  type = number
+}
+
+variable "fx_max_active_rfqs" {
+  type = number
+}
+
+variable "fx_x402_requests_per_minute_per_ip" {
+  type = number
+}
+
+variable "fx_max_concurrent_x402_requests" {
+  type = number
+}
+
 variable "graduation_keeper_enabled" {
   type    = bool
   default = false

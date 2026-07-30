@@ -39,19 +39,22 @@ variable "repository_ref" {
 variable "relay_a" {
   description = "Region-specific configuration for relay A."
   type = object({
-    region                               = string
-    availability_zone                    = optional(string)
-    domain                               = string
-    vpc_cidr                             = string
-    subnet_cidr                          = string
-    instance_type                        = optional(string, "t3.small")
-    root_volume_gib                      = optional(number, 30)
-    node_key_parameter_name              = string
-    rain_attestor_key_parameter_name     = string
-    base_rpc_url_parameter_name          = string
-    graduation_keeper_enabled            = optional(bool, false)
-    graduation_keeper_key_parameter_name = optional(string)
-    static_peer                          = string
+    region                                 = string
+    availability_zone                      = optional(string)
+    domain                                 = string
+    vpc_cidr                               = string
+    subnet_cidr                            = string
+    instance_type                          = optional(string, "t3.small")
+    root_volume_gib                        = optional(number, 30)
+    node_key_parameter_name                = string
+    rain_attestor_key_parameter_name       = string
+    base_rpc_url_parameter_name            = string
+    fx_broker_key_parameter_name           = optional(string)
+    fx_base_sepolia_rpc_parameter_name     = optional(string)
+    fx_arbitrum_sepolia_rpc_parameter_name = optional(string)
+    graduation_keeper_enabled              = optional(bool, false)
+    graduation_keeper_key_parameter_name   = optional(string)
+    static_peer                            = string
   })
   validation {
     condition = !var.relay_a.graduation_keeper_enabled || try(
@@ -60,24 +63,35 @@ variable "relay_a" {
     )
     error_message = "relay_a requires graduation_keeper_key_parameter_name when its keeper is enabled."
   }
+  validation {
+    condition = !var.fx.enabled || (
+      try(length(trimspace(var.relay_a.fx_broker_key_parameter_name)) > 0, false) &&
+      try(length(trimspace(var.relay_a.fx_base_sepolia_rpc_parameter_name)) > 0, false) &&
+      try(length(trimspace(var.relay_a.fx_arbitrum_sepolia_rpc_parameter_name)) > 0, false)
+    )
+    error_message = "relay_a requires all FX broker and testnet RPC parameter names when FX is enabled."
+  }
 }
 
 variable "relay_b" {
   description = "Region-specific configuration for relay B."
   type = object({
-    region                               = string
-    availability_zone                    = optional(string)
-    domain                               = string
-    vpc_cidr                             = string
-    subnet_cidr                          = string
-    instance_type                        = optional(string, "t3.small")
-    root_volume_gib                      = optional(number, 30)
-    node_key_parameter_name              = string
-    rain_attestor_key_parameter_name     = string
-    base_rpc_url_parameter_name          = string
-    graduation_keeper_enabled            = optional(bool, false)
-    graduation_keeper_key_parameter_name = optional(string)
-    static_peer                          = string
+    region                                 = string
+    availability_zone                      = optional(string)
+    domain                                 = string
+    vpc_cidr                               = string
+    subnet_cidr                            = string
+    instance_type                          = optional(string, "t3.small")
+    root_volume_gib                        = optional(number, 30)
+    node_key_parameter_name                = string
+    rain_attestor_key_parameter_name       = string
+    base_rpc_url_parameter_name            = string
+    fx_broker_key_parameter_name           = optional(string)
+    fx_base_sepolia_rpc_parameter_name     = optional(string)
+    fx_arbitrum_sepolia_rpc_parameter_name = optional(string)
+    graduation_keeper_enabled              = optional(bool, false)
+    graduation_keeper_key_parameter_name   = optional(string)
+    static_peer                            = string
   })
   validation {
     condition = !var.relay_b.graduation_keeper_enabled || try(
@@ -85,6 +99,42 @@ variable "relay_b" {
       false,
     )
     error_message = "relay_b requires graduation_keeper_key_parameter_name when its keeper is enabled."
+  }
+  validation {
+    condition = !var.fx.enabled || (
+      try(length(trimspace(var.relay_b.fx_broker_key_parameter_name)) > 0, false) &&
+      try(length(trimspace(var.relay_b.fx_base_sepolia_rpc_parameter_name)) > 0, false) &&
+      try(length(trimspace(var.relay_b.fx_arbitrum_sepolia_rpc_parameter_name)) > 0, false)
+    )
+    error_message = "relay_b requires all FX broker and testnet RPC parameter names when FX is enabled."
+  }
+}
+
+variable "fx" {
+  description = "Optional public-testnet-only non-custodial FX broker sidecar."
+  type = object({
+    enabled                         = optional(bool, false)
+    deployment_id                   = optional(string, "0x1edf9c4dca5cbcb8b1875f4ce950844237258367d51e5d02dc3de577b3088494")
+    waku_peers                      = optional(string, "/dns4/relay-a.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAmCQArrt8ND7sTzPCg76YmQPab7HKjSrVZeyeTVZdQyPWy,/dns4/relay-b.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAkx96y18XpzAybpmi1zzdMQZFvsRPZfkku8R9T4KJFMr2P")
+    observation_window_ms           = optional(number, 20000)
+    max_active_rfqs                 = optional(number, 32)
+    x402_requests_per_minute_per_ip = optional(number, 120)
+    max_concurrent_x402_requests    = optional(number, 16)
+  })
+  default = {}
+  validation {
+    condition = (
+      can(regex("^0x[a-fA-F0-9]{64}$", var.fx.deployment_id)) &&
+      var.fx.observation_window_ms >= 250 &&
+      var.fx.observation_window_ms <= 60000 &&
+      var.fx.max_active_rfqs >= 1 &&
+      var.fx.max_active_rfqs <= 256 &&
+      var.fx.x402_requests_per_minute_per_ip >= 4 &&
+      var.fx.x402_requests_per_minute_per_ip <= 600 &&
+      var.fx.max_concurrent_x402_requests >= 1 &&
+      var.fx.max_concurrent_x402_requests <= 64
+    )
+    error_message = "FX deployment ID, observation window, RFQ ceiling, or HTTP limits are invalid."
   }
 }
 

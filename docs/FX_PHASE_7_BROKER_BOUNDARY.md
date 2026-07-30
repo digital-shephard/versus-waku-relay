@@ -50,12 +50,17 @@ No broker payment is valid from a route response alone. The Phase 7 reference
 fee claim requires the requester voucher, accepted route, both claim
 observations, and independent chain confirmation.
 
-## Production Status
+## Public-Testnet Status
 
-Phase 7 does not deploy a public broker, enable real broker payments, or add
-FX semantics to the current relay fleet. A public broker requires its own TLS
-route, process identity, secret scope, rate policy, monitoring, legal review,
-and completion-payment implementation.
+The `fx-testnet` profile packages the reference broker as a separate,
+least-privileged container and exposes `/v1/fx/swaps*` through the existing
+relay TLS domains. The current deployment is fixed to requester-secret V3 on
+Base Sepolia and Arbitrum Sepolia. It charges no broker fee.
+
+The sidecar has its own SSM-managed non-funded identity, read-only testnet
+RPCs, journal, resource limits, health endpoint, and rollback path. It does
+not add FX semantics to `src/main.mjs`, does not alter nwaku, and does not
+hold inventory or execution funds. Mainnet remains disabled.
 
 Run the independent checks with:
 

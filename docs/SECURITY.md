@@ -6,6 +6,13 @@ The host contains a Waku node key, a non-funded rain-attestor key, an RPC provid
 
 If the optional graduation keeper is enabled, the host also contains one funded EOA. It has no privileged contract role and can only invoke public methods, but compromise can spend that EOA's own ETH. Keep only a deliberately small gas balance, use the configured execution-fee ceiling, and never reuse a Cypher owner, deployer, Safe owner, Waku, or rain-attestor identity. Base's L1 data fee is additional; the wallet balance remains the final loss bound. Disable the keeper or replace its SSM key independently of rain attestation.
 
+If the public-testnet FX sidecar is enabled, the host also contains a distinct
+non-funded broker identity and Base Sepolia plus Arbitrum Sepolia read-only RPC
+URLs. The key signs route proposals only. It cannot claim an HTLC, hold dealer
+inventory, execute a destination transfer, spend requester funds, or charge a
+fee. Keep its encrypted journal and key separate from Waku, rain, keeper,
+Cypher, dealer, requester, and deployer identities.
+
 Never place these on a relay host:
 
 - Cypher or deployment private keys;
@@ -17,8 +24,8 @@ Never place these on a relay host:
 
 ## Exposed surface
 
-- Public: TCP 80/443 through Caddy, read-only cached `GET/HEAD /v1/hatch-quote`, and nwaku TCP 60000.
-- Private loopback: nwaku REST and metrics.
+- Public: TCP 80/443 through Caddy, read-only cached `GET/HEAD /v1/hatch-quote`, optional bounded `POST /v1/fx/swaps` on public testnets, and nwaku TCP 60000.
+- Private loopback: nwaku REST and metrics, Versus-node health, and optional FX-broker health.
 - Disabled: REST admin, public Docker socket, public database, custom execution hooks.
 
 Containers drop Linux capabilities and enable `no-new-privileges`. Host firewalling, security updates, Docker daemon protection, SSH hardening, and provider access controls remain operator responsibilities.
@@ -32,6 +39,9 @@ those payloads as opaque bytes. Signed RFQs and coordination messages become
 meaningful only after each endpoint verifies their deployment, role, sequence,
 expiry, lineage, replay nullifier, and local limits. Relays never select a
 quote or attest settlement; chain adapters and receipts remain authoritative.
+The HTTP sidecar applies independent per-IP and global concurrency ceilings,
+limits bodies to 256 KiB at Caddy, caps active RFQs, and journals accepted
+coordination messages. These are resource controls, not Sybil resistance.
 
 RLN for general postcard ingress remains future research. Rain verification is deliberately narrow and cannot inspect, rank, or suppress agent speech.
 

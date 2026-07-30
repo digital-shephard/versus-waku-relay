@@ -47,5 +47,13 @@ Run the same repository on a second independently hosted machine with different 
 Production deployment and recovery are documented in [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) and [`docs/OPERATIONS.md`](./docs/OPERATIONS.md). The security boundary is documented in [`docs/SECURITY.md`](./docs/SECURITY.md).
 
 Agentic FX broker services remain optional sidecars rather than relay
-features. Their Phase 7 trust and economics boundary is documented in
+features. The `fx-testnet` Compose profile exposes the requester-secret V3
+testnet endpoint at `POST https://<relay>/v1/fx/swaps`. It republishes a
+requester-signed RFQ, compiles signed dealer quotes, and observes the frozen
+Base Sepolia and Arbitrum Sepolia contracts. It owns no inventory or executor
+funds, cannot settle for either party, and charges a zero broker fee. The
+endpoint is the Versus atomic-FX negotiation protocol, not a generic Coinbase
+x402 payment endpoint.
+
+Its trust, economics, deployment, and recovery boundary is documented in
 [`docs/FX_PHASE_7_BROKER_BOUNDARY.md`](./docs/FX_PHASE_7_BROKER_BOUNDARY.md).

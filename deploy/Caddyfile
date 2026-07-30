@@ -14,6 +14,13 @@
 		reverse_proxy versus-node:8787
 	}
 
+	handle /v1/fx/swaps* {
+		request_body {
+			max_size 256KB
+		}
+		reverse_proxy fx-broker:8788
+	}
+
 	handle {
 		reverse_proxy nwaku:8000
 	}
