@@ -142,6 +142,10 @@ test("AWS rollout reads scoped SSM secrets without placing the broker key in env
   assert.match(userData, /\$\{fx_compose_profile\}/);
   assert.match(moduleMain, /--profile fx-testnet/);
   assert.match(enable, /grep -vE '\^VERSUS_FX_'/);
+  assert.match(enable, /\.deployment-id/);
+  assert.match(enable, /x402-exact-swaps/);
+  assert.match(enable, /archive_directory/);
+  assert.doesNotMatch(enable, /rm -rf/);
   assert.match(enable, /FX_PHASE7_BROKER_FEE_ATOMIC|VERSUS_FX_DEPLOYMENT_ID/);
   assert.doesNotMatch(enable, /echo "\$broker_key"|set -x/);
   assert.match(disable, /stop fx-broker/);

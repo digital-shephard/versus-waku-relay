@@ -14,6 +14,9 @@ arbitrum_parameter="${FX_ARBITRUM_SEPOLIA_RPC_PARAMETER_NAME:?set FX_ARBITRUM_SE
 root="/opt/versus-waku-relay"
 env_file="$root/.env"
 compose_file="$root/deploy/docker-compose.yml"
+data_directory="/var/lib/versus-fx-broker"
+target_deployment="0x5f6e0d22253c91a77b25e50add622e1e172c8a7f30a4b1cbfb652e8d680dbf45"
+deployment_marker="$data_directory/.deployment-id"
 
 if [[ ! -f "$env_file" || ! -f "$compose_file" ]]; then
   echo "Versus relay deployment is incomplete." >&2
@@ -64,12 +67,54 @@ if [[ "${broker_key,,}" == "${rain_key,,}" ]] ||
   exit 1
 fi
 
-install -d -o 1000 -g 1000 -m 0700 /var/lib/versus-fx-broker
+install -d -o 1000 -g 1000 -m 0700 "$data_directory"
 install -d -m 0700 /var/lib/versus-fx-secrets
 install -o 1000 -g 1000 -m 0400 /dev/null /var/lib/versus-fx-secrets/broker-key
 printf '%s\n' "$broker_key" > /var/lib/versus-fx-secrets/broker-key
 install -o 1000 -g 1000 -m 0400 /dev/null /var/lib/versus-fx-secrets/exact-settler-key
 printf '%s\n' "$settler_key" > /var/lib/versus-fx-secrets/exact-settler-key
+
+existing_deployment=""
+if [[ -f "$deployment_marker" ]]; then
+  existing_deployment=$(tr -d '\r\n' < "$deployment_marker")
+else
+  existing_deployment=$(sed -n 's/^VERSUS_FX_DEPLOYMENT_ID=//p' "$env_file" | tail -n 1)
+fi
+
+runtime_entries=(
+  phase7-broker-coordination.sqlite
+  phase7-broker-coordination.sqlite-shm
+  phase7-broker-coordination.sqlite-wal
+  x402-swaps
+  x402-exact-swaps
+)
+has_runtime=false
+for entry in "${runtime_entries[@]}"; do
+  if [[ -e "$data_directory/$entry" ]]; then
+    has_runtime=true
+    break
+  fi
+done
+
+if [[ "$has_runtime" == "true" ]] &&
+   { [[ ! -f "$deployment_marker" ]] || [[ "$existing_deployment" != "$target_deployment" ]]; }; then
+  stamp=$(date -u +%Y%m%dT%H%M%SZ)
+  label=${existing_deployment#0x}
+  [[ "$label" =~ ^[0-9a-fA-F]{64}$ ]] || label="legacy-unmarked"
+  archive_directory="$data_directory/archive/$stamp-$label"
+  install -d -o 1000 -g 1000 -m 0700 "$archive_directory"
+  for entry in "${runtime_entries[@]}"; do
+    if [[ -e "$data_directory/$entry" ]]; then
+      mv "$data_directory/$entry" "$archive_directory/$entry"
+    fi
+  done
+  printf '%s\n' "${existing_deployment:-unknown}" > "$archive_directory/deployment-id.txt"
+  chown -R 1000:1000 "$archive_directory"
+  chmod 0600 "$archive_directory/deployment-id.txt"
+fi
+
+install -o 1000 -g 1000 -m 0600 /dev/null "$deployment_marker"
+printf '%s\n' "$target_deployment" > "$deployment_marker"
 
 temporary=$(mktemp "$root/.env.fx.XXXXXX")
 trap 'rm -f "$temporary"; unset broker_key settler_key rain_key keeper_key base_rpc_url arbitrum_rpc_url' EXIT
@@ -77,7 +122,7 @@ grep -vE '^VERSUS_FX_' "$env_file" > "$temporary"
 cat >> "$temporary" <<EOF
 VERSUS_FX_ENABLED=true
 VERSUS_FX_BROKER_IMAGE=versus-fx-broker:0.1.0
-VERSUS_FX_DEPLOYMENT_ID=0x5f6e0d22253c91a77b25e50add622e1e172c8a7f30a4b1cbfb652e8d680dbf45
+VERSUS_FX_DEPLOYMENT_ID=$target_deployment
 VERSUS_FX_WAKU_PEERS=/dns4/relay-a.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAmCQArrt8ND7sTzPCg76YmQPab7HKjSrVZeyeTVZdQyPWy,/dns4/relay-b.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAkx96y18XpzAybpmi1zzdMQZFvsRPZfkku8R9T4KJFMr2P
 VERSUS_FX_OBSERVATION_WINDOW_MS=20000
 VERSUS_FX_MAX_ACTIVE_RFQS=32
