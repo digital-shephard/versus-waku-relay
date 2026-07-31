@@ -8,10 +8,13 @@ If the optional graduation keeper is enabled, the host also contains one funded 
 
 If the public-testnet FX sidecar is enabled, the host also contains a distinct
 non-funded broker identity and Base Sepolia plus Arbitrum Sepolia read-only RPC
-URLs. The key signs route proposals only. It cannot claim an HTLC, hold dealer
-inventory, execute a destination transfer, spend requester funds, or charge a
-fee. Keep its encrypted journal and key separate from Waku, rain, keeper,
-Cypher, dealer, requester, and deployer identities.
+URLs. The broker key signs route proposals only. Generic exact additionally
+uses a separate low-balance settlement EOA that spends its own gas and receives
+the disclosed facilitator fee. It can submit only the caller-signed EIP-3009
+authorization and frozen factory terms; it cannot rewrite those terms or move
+dealer inventory. Its deliberately small ETH balance is the compromise loss
+bound. Keep both identities separate from Waku, rain, keeper, Cypher, dealer,
+requester, and deployer identities.
 
 Never place these on a relay host:
 
@@ -24,7 +27,7 @@ Never place these on a relay host:
 
 ## Exposed surface
 
-- Public: TCP 80/443 through Caddy, read-only cached `GET/HEAD /v1/hatch-quote`, optional bounded `POST /v1/fx/swaps` on public testnets, and nwaku TCP 60000.
+- Public: TCP 80/443 through Caddy, read-only cached `GET/HEAD /v1/hatch-quote`, optional bounded `POST /v1/fx/swaps` and `POST /v1/fx/exact` on public testnets, and nwaku TCP 60000.
 - Private loopback: nwaku REST and metrics, Versus-node health, and optional FX-broker health.
 - Disabled: REST admin, public Docker socket, public database, custom execution hooks.
 

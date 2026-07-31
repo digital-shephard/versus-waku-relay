@@ -16,6 +16,7 @@ locals {
     var.rain_attestor_key_parameter_name,
     var.base_rpc_url_parameter_name,
     var.fx_broker_enabled ? var.fx_broker_key_parameter_name : null,
+    var.fx_broker_enabled ? var.fx_exact_settler_key_parameter_name : null,
     var.fx_broker_enabled ? var.fx_base_sepolia_rpc_parameter_name : null,
     var.fx_broker_enabled ? var.fx_arbitrum_sepolia_rpc_parameter_name : null,
     var.graduation_keeper_enabled ? var.graduation_keeper_key_parameter_name : null,
@@ -198,6 +199,7 @@ resource "aws_instance" "relay" {
     base_rpc_url_parameter_name            = var.base_rpc_url_parameter_name
     fx_broker_enabled                      = var.fx_broker_enabled
     fx_broker_key_parameter_name           = var.fx_broker_key_parameter_name != null ? var.fx_broker_key_parameter_name : ""
+    fx_exact_settler_key_parameter_name    = var.fx_exact_settler_key_parameter_name != null ? var.fx_exact_settler_key_parameter_name : ""
     fx_base_sepolia_rpc_parameter_name     = var.fx_base_sepolia_rpc_parameter_name != null ? var.fx_base_sepolia_rpc_parameter_name : ""
     fx_arbitrum_sepolia_rpc_parameter_name = var.fx_arbitrum_sepolia_rpc_parameter_name != null ? var.fx_arbitrum_sepolia_rpc_parameter_name : ""
     fx_deployment_id                       = var.fx_deployment_id

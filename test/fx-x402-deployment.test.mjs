@@ -9,14 +9,16 @@ const read = (...parts) => fs.readFileSync(path.join(ROOT, ...parts), "utf8");
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 
 const DEPLOYMENT_ID =
-  "0x1edf9c4dca5cbcb8b1875f4ce950844237258367d51e5d02dc3de577b3088494";
+  "0x5f6e0d22253c91a77b25e50add622e1e172c8a7f30a4b1cbfb652e8d680dbf45";
 const COORDINATION_DOMAIN =
-  "0x6d2d3f9784460521d35605b450e5a46fc1c068df7724265c8f12fec7f1693b2c";
+  "0x6e5a6b5ed65eac32898129a87fbcb68b870469b348c52645fe2170f03e04df9a";
 
 test("frozen public-testnet manifest and broker package match their provenance", () => {
   const manifestText = read("config", "fx-v3-public-testnet.json");
   const manifest = JSON.parse(manifestText);
   const provenance = JSON.parse(read("broker", "PROVENANCE.json"));
+  const exactFactoriesText = read("config", "fx-x402-exact-factories.json");
+  const exactFactories = JSON.parse(exactFactoriesText);
   const tarball = fs.readFileSync(
     path.join(ROOT, "broker", "vendor", "versus-network-0.1.0.tgz")
   );
@@ -30,13 +32,15 @@ test("frozen public-testnet manifest and broker package match their provenance",
   );
   assert.equal(provenance.deploymentId, DEPLOYMENT_ID);
   assert.equal(provenance.coordinationDomain, COORDINATION_DOMAIN);
+  assert.equal(exactFactories.deploymentId, DEPLOYMENT_ID);
   assert.equal(sha256(manifestText), provenance.manifestSha256);
+  assert.equal(sha256(exactFactoriesText), provenance.exactFactoriesSha256);
   assert.equal(sha256(tarball), provenance.tarballSha256);
   assert.equal(tarball.length, provenance.tarballBytes);
   assert.match(provenance.sourceCommit, /^[a-f0-9]{40}$/);
 });
 
-test("FX broker stays an isolated zero-fee testnet sidecar", () => {
+test("FX broker stays isolated while generic exact charges a disclosed fee", () => {
   const compose = read("deploy", "docker-compose.yml");
   const caddy = read("deploy", "Caddyfile");
   const nodeEntry = read("src", "main.mjs");
@@ -50,6 +54,9 @@ test("FX broker stays an isolated zero-fee testnet sidecar", () => {
   assert.match(broker, /FX_PHASE7_BROKER_FEE_ATOMIC: "0"/);
   assert.match(broker, /FX_PHASE7_BROKER_PRIVATE_KEY_FILE: \/run\/secrets\/fx-broker-key/);
   assert.match(broker, /FX_X402_SWAP_ENABLED: "1"/);
+  assert.match(broker, /FX_X402_EXACT_ENABLED: "1"/);
+  assert.match(broker, /FX_X402_EXACT_SETTLER_KEY_FILE: \/run\/secrets\/fx-exact-settler-key/);
+  assert.match(broker, /FX_X402_EXACT_FACILITATOR_FEE_ATOMIC:/);
   assert.match(broker, /FX_PHASE7_HTTP_TRUST_PROXY: "1"/);
   assert.match(broker, /127\.0\.0\.1:\$\{VERSUS_FX_BROKER_HEALTH_PORT/);
   assert.match(broker, /read_only: true/);
@@ -57,6 +64,7 @@ test("FX broker stays an isolated zero-fee testnet sidecar", () => {
   assert.match(broker, /cap_drop:\s*\n\s*- ALL/);
   assert.doesNotMatch(broker, /FX_PHASE7_BROKER_PRIVATE_KEY:/);
   assert.match(caddy, /handle \/v1\/fx\/swaps\*/);
+  assert.match(caddy, /handle \/v1\/fx\/exact\*/);
   assert.match(caddy, /max_size 256KB/);
   assert.match(caddy, /reverse_proxy fx-broker:8788/);
   assert.doesNotMatch(nodeEntry, /fx-(?:broker|x402)/i);
@@ -88,6 +96,9 @@ test("FX production configuration fails closed unless every boundary is explicit
     VERSUS_FX_BASE_SEPOLIA_RPC_URL: "https://base-sepolia.example.invalid",
     VERSUS_FX_ARBITRUM_SEPOLIA_RPC_URL: "https://arb-sepolia.example.invalid",
     VERSUS_FX_BROKER_KEY_PATH: "/var/lib/versus-fx-secrets/broker-key",
+    VERSUS_FX_EXACT_SETTLER_KEY_PATH:
+      "/var/lib/versus-fx-secrets/exact-settler-key",
+    VERSUS_FX_EXACT_FACILITATOR_FEE_ATOMIC: "1000",
     VERSUS_FX_WAKU_PEERS:
       "/dns4/relay-a.versuscypher.com/tcp/443/wss/p2p/a,/dns4/relay-b.versuscypher.com/tcp/443/wss/p2p/b",
   };
@@ -121,10 +132,12 @@ test("AWS rollout reads scoped SSM secrets without placing the broker key in env
   const verify = read("deploy", "verify-fx-testnet.sh");
 
   assert.match(moduleMain, /var\.fx_broker_key_parameter_name/);
+  assert.match(moduleMain, /var\.fx_exact_settler_key_parameter_name/);
   assert.match(moduleMain, /var\.fx_base_sepolia_rpc_parameter_name/);
   assert.match(moduleMain, /var\.fx_arbitrum_sepolia_rpc_parameter_name/);
   assert.match(userData, /aws ssm get-parameter[\s\S]*--with-decryption/);
   assert.match(userData, /\/var\/lib\/versus-fx-secrets\/broker-key/);
+  assert.match(userData, /\/var\/lib\/versus-fx-secrets\/exact-settler-key/);
   assert.doesNotMatch(userData, /VERSUS_FX_BROKER_PRIVATE_KEY=/);
   assert.match(userData, /\$\{fx_compose_profile\}/);
   assert.match(moduleMain, /--profile fx-testnet/);
@@ -135,6 +148,7 @@ test("AWS rollout reads scoped SSM secrets without placing the broker key in env
   assert.doesNotMatch(disable, /rm -rf|docker compose[\s\S]*down/);
   assert.match(verify, /VERSUS_EXPECTED_REPOSITORY_REF/);
   assert.match(verify, /provenance\.manifestSha256/);
+  assert.match(verify, /provenance\.exactFactoriesSha256/);
   assert.match(verify, /provenance\.tarballSha256/);
   assert.match(verify, /ps --status running --services/);
   assert.match(verify, /request OPTIONS/);
@@ -149,6 +163,8 @@ test("public acceptance checks two distinct Waku identities and bounded FX prefl
   assert.match(acceptance, /AbortSignal\.timeout\(timeoutMs\)/);
   assert.match(acceptance, /method: "OPTIONS"/);
   assert.match(acceptance, /access-control-request-method": "POST"/);
+  assert.match(acceptance, /\/v1\/fx\/swaps/);
+  assert.match(acceptance, /\/v1\/fx\/exact/);
   assert.match(acceptance, /same Waku peer identity/);
   assert.doesNotMatch(acceptance, /privateKey|sourceLock|secret/i);
 });

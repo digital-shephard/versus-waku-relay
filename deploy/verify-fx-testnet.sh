@@ -33,6 +33,9 @@ node -e '
   const manifest = fs.readFileSync(
     path.join(root, "config", "fx-v3-public-testnet.json")
   );
+  const factories = fs.readFileSync(
+    path.join(root, "config", "fx-x402-exact-factories.json")
+  );
   const tarball = fs.readFileSync(
     path.join(root, "broker", "vendor", "versus-network-0.1.0.tgz")
   );
@@ -40,6 +43,9 @@ node -e '
     crypto.createHash("sha256").update(value).digest("hex");
   if (sha256(manifest) !== provenance.manifestSha256) {
     throw new Error("frozen FX manifest hash mismatch");
+  }
+  if (sha256(factories) !== provenance.exactFactoriesSha256) {
+    throw new Error("frozen exact factory manifest hash mismatch");
   }
   if (
     sha256(tarball) !== provenance.tarballSha256 ||
@@ -105,5 +111,12 @@ if [[ "$status" != "204" ]]; then
   exit 1
 fi
 
-printf '{"healthy":true,"commit":"%s","domain":"%s","fxEndpoint":"https://%s/v1/fx/swaps"}\n' \
-  "$actual_ref" "$public_domain" "$public_domain"
+exact_status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+  --request OPTIONS "https://${public_domain}/v1/fx/exact")
+if [[ "$exact_status" != "204" ]]; then
+  echo "Public exact endpoint returned HTTP $exact_status." >&2
+  exit 1
+fi
+
+printf '{"healthy":true,"commit":"%s","domain":"%s","fxEndpoint":"https://%s/v1/fx/swaps","exactEndpoint":"https://%s/v1/fx/exact"}\n' \
+  "$actual_ref" "$public_domain" "$public_domain" "$public_domain"

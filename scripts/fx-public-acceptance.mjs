@@ -37,29 +37,36 @@ async function inspectRelay(domain) {
     throw new Error(`${domain} did not report a public Waku peer identity`);
   }
 
-  const fxUrl = `https://${domain}/v1/fx/swaps`;
-  const fxResponse = await fetch(fxUrl, {
-    method: "OPTIONS",
-    headers: {
-      origin: "https://versuscypher.com",
-      "access-control-request-method": "POST",
-    },
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  if (fxResponse.status !== 204) {
-    throw new Error(`${domain} FX endpoint returned HTTP ${fxResponse.status}`);
-  }
-  const methods = fxResponse.headers.get("access-control-allow-methods") || "";
-  if (!methods.split(",").map((value) => value.trim()).includes("POST")) {
-    throw new Error(`${domain} FX endpoint did not allow POST`);
+  const fxEndpoints = {};
+  for (const [name, path] of [
+    ["custom", "/v1/fx/swaps"],
+    ["exact", "/v1/fx/exact"],
+  ]) {
+    const fxUrl = `https://${domain}${path}`;
+    const fxResponse = await fetch(fxUrl, {
+      method: "OPTIONS",
+      headers: {
+        origin: "https://versuscypher.com",
+        "access-control-request-method": "POST",
+      },
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (fxResponse.status !== 204) {
+      throw new Error(`${domain} ${name} FX endpoint returned HTTP ${fxResponse.status}`);
+    }
+    const methods = fxResponse.headers.get("access-control-allow-methods") || "";
+    if (!methods.split(",").map((value) => value.trim()).includes("POST")) {
+      throw new Error(`${domain} ${name} FX endpoint did not allow POST`);
+    }
+    fxEndpoints[name] = fxUrl;
   }
 
   return {
     domain,
     peerId,
     relayHealth: healthUrl,
-    fxEndpoint: fxUrl,
-    fxStatus: fxResponse.status,
+    fxEndpoints,
+    fxStatus: 204,
   };
 }
 

@@ -13,7 +13,7 @@ scheduled Uniswap quote -> signed cached /v1/hatch-quote
 
 optional keeper -- graduateClass(classId) --> canonical GraduationModule
 
-public requester -- HTTPS /v1/fx/swaps --> optional zero-fee FX broker
+public requester -- HTTPS /v1/fx/swaps or /v1/fx/exact --> FX broker
                                                 |
                                     signed RFQ / dealer quotes over Waku
                                                 |
@@ -64,19 +64,21 @@ Every receiving Cypher verifies those properties independently. A relay may carr
 ## Optional public FX ingress
 
 The `fx-testnet` profile adds a fourth, isolated process. Caddy forwards only
-`/v1/fx/swaps*` to it and caps request bodies at 256 KiB. The broker has its
-own SSM-managed signing identity, encrypted journal, testnet RPC URLs, HTTP
-limits, Waku limits, and loopback-only health port. It is built from the
+`/v1/fx/swaps*` and `/v1/fx/exact*` to it and caps request bodies at 256 KiB.
+The broker has its own SSM-managed signing identity, a separate low-balance
+exact-settlement identity, encrypted journal, testnet RPC URLs, HTTP limits,
+Waku limits, and loopback-only health port. It is built from the
 vendored `@versus/network` tarball whose source commit and SHA-256 are frozen
 in `broker/PROVENANCE.json`.
 
-The broker never receives a dealer key, Cypher key, requester key, inventory,
-executor balance, or settlement authority. It can publish the signed RFQ,
-collect and deterministically rank signed quotes, and observe V3 receipts. A
-requester independently verifies the proposal and directly funds its frozen
-HTLC. Dealers and execution relayers act independently over the same public
-protocol. Losing either public broker removes one discovery path; it cannot
-take funds or invalidate an accepted route.
+The broker never receives a dealer key, Cypher key, requester key, or dealer
+inventory. It can publish the signed RFQ, collect and deterministically rank
+signed quotes, and observe V3 receipts. For generic exact only, its dedicated
+settler spends relay gas to submit the caller's EIP-3009 authorization to a
+frozen CREATE2 factory. One atomic transaction pays the disclosed facilitator
+fee and activates the exact signed HTLC; failure rolls both back. The settler
+cannot rewrite the signed amount, recipient, fee, or lock terms. Dealers and
+execution relayers act independently over the same public protocol.
 
 ## Scaling boundary
 

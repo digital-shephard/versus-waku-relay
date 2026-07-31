@@ -86,6 +86,16 @@ export function validateEnv(env, { allowPlaceholders = false } = {}) {
     if (!env.VERSUS_FX_BROKER_KEY_PATH) {
       throw new Error("VERSUS_FX_BROKER_KEY_PATH is required when FX is enabled");
     }
+    if (!env.VERSUS_FX_EXACT_SETTLER_KEY_PATH) {
+      throw new Error("VERSUS_FX_EXACT_SETTLER_KEY_PATH is required when FX is enabled");
+    }
+    integer(
+      env,
+      "VERSUS_FX_EXACT_FACILITATOR_FEE_ATOMIC",
+      0,
+      1000000,
+      1000
+    );
     const peers = String(env.VERSUS_FX_WAKU_PEERS || "")
       .split(",")
       .map((value) => value.trim())

@@ -50,6 +50,7 @@ variable "relay_a" {
     rain_attestor_key_parameter_name       = string
     base_rpc_url_parameter_name            = string
     fx_broker_key_parameter_name           = optional(string)
+    fx_exact_settler_key_parameter_name    = optional(string)
     fx_base_sepolia_rpc_parameter_name     = optional(string)
     fx_arbitrum_sepolia_rpc_parameter_name = optional(string)
     graduation_keeper_enabled              = optional(bool, false)
@@ -66,10 +67,11 @@ variable "relay_a" {
   validation {
     condition = !var.fx.enabled || (
       try(length(trimspace(var.relay_a.fx_broker_key_parameter_name)) > 0, false) &&
+      try(length(trimspace(var.relay_a.fx_exact_settler_key_parameter_name)) > 0, false) &&
       try(length(trimspace(var.relay_a.fx_base_sepolia_rpc_parameter_name)) > 0, false) &&
       try(length(trimspace(var.relay_a.fx_arbitrum_sepolia_rpc_parameter_name)) > 0, false)
     )
-    error_message = "relay_a requires all FX broker and testnet RPC parameter names when FX is enabled."
+    error_message = "relay_a requires FX broker, exact settler, and testnet RPC parameter names when FX is enabled."
   }
 }
 
@@ -87,6 +89,7 @@ variable "relay_b" {
     rain_attestor_key_parameter_name       = string
     base_rpc_url_parameter_name            = string
     fx_broker_key_parameter_name           = optional(string)
+    fx_exact_settler_key_parameter_name    = optional(string)
     fx_base_sepolia_rpc_parameter_name     = optional(string)
     fx_arbitrum_sepolia_rpc_parameter_name = optional(string)
     graduation_keeper_enabled              = optional(bool, false)
@@ -103,10 +106,11 @@ variable "relay_b" {
   validation {
     condition = !var.fx.enabled || (
       try(length(trimspace(var.relay_b.fx_broker_key_parameter_name)) > 0, false) &&
+      try(length(trimspace(var.relay_b.fx_exact_settler_key_parameter_name)) > 0, false) &&
       try(length(trimspace(var.relay_b.fx_base_sepolia_rpc_parameter_name)) > 0, false) &&
       try(length(trimspace(var.relay_b.fx_arbitrum_sepolia_rpc_parameter_name)) > 0, false)
     )
-    error_message = "relay_b requires all FX broker and testnet RPC parameter names when FX is enabled."
+    error_message = "relay_b requires FX broker, exact settler, and testnet RPC parameter names when FX is enabled."
   }
 }
 
@@ -114,7 +118,7 @@ variable "fx" {
   description = "Optional public-testnet-only non-custodial FX broker sidecar."
   type = object({
     enabled                         = optional(bool, false)
-    deployment_id                   = optional(string, "0x1edf9c4dca5cbcb8b1875f4ce950844237258367d51e5d02dc3de577b3088494")
+    deployment_id                   = optional(string, "0x5f6e0d22253c91a77b25e50add622e1e172c8a7f30a4b1cbfb652e8d680dbf45")
     waku_peers                      = optional(string, "/dns4/relay-a.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAmCQArrt8ND7sTzPCg76YmQPab7HKjSrVZeyeTVZdQyPWy,/dns4/relay-b.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAkx96y18XpzAybpmi1zzdMQZFvsRPZfkku8R9T4KJFMr2P")
     observation_window_ms           = optional(number, 20000)
     max_active_rfqs                 = optional(number, 32)

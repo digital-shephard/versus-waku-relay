@@ -2,13 +2,15 @@
   "schema": "versus-fx-broker-runtime-provenance",
   "schemaVersion": 1,
   "sourceRepository": "https://github.com/digital-shephard/versus-cypher.git",
-  "sourceCommit": "deed83d87d91b3ab001b662d81d92371255db7aa",
+  "sourceCommit": "3b66a2e6d67310ca6b79efe455d4efece7e41bbf",
   "package": "@versus/network@0.1.0",
   "tarball": "vendor/versus-network-0.1.0.tgz",
-  "tarballBytes": 148003,
-  "tarballSha256": "2a2bcdddce8cc692ef260a80cac62563b37502cfe4f75753f7c1f3a333d1411a",
+  "tarballBytes": 160222,
+  "tarballSha256": "ed604e718e42f1e4fbe7600a38414c3e1d8a2b22f710e95e9828143c98a424fc",
   "manifest": "../config/fx-v3-public-testnet.json",
-  "manifestSha256": "6e7fd884032a4353238f5995875f9d44962075076bfb4e6dbcf56134e73a0023",
-  "deploymentId": "0x1edf9c4dca5cbcb8b1875f4ce950844237258367d51e5d02dc3de577b3088494",
-  "coordinationDomain": "0x6d2d3f9784460521d35605b450e5a46fc1c068df7724265c8f12fec7f1693b2c"
+  "manifestSha256": "9c624dbcbc9c93ccfefb7ce08d67abc23203590af0a66473566c7df68c632b51",
+  "exactFactories": "../config/fx-x402-exact-factories.json",
+  "exactFactoriesSha256": "5b0e56865ae15a0f68d76b46cfaabc4b627be4e7acf4b8399778650e2da6b884",
+  "deploymentId": "0x5f6e0d22253c91a77b25e50add622e1e172c8a7f30a4b1cbfb652e8d680dbf45",
+  "coordinationDomain": "0x6e5a6b5ed65eac32898129a87fbcb68b870469b348c52645fe2170f03e04df9a"
 }

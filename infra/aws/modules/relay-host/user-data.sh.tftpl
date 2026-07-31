@@ -46,14 +46,17 @@ if [[ ! "$rain_attestor_key" =~ ^0x[0-9a-fA-F]{64}$ ]] || [[ ! "$base_rpc_url" =
 fi
 
 fx_broker_key=""
+fx_exact_settler_key=""
 fx_base_sepolia_rpc_url="https://disabled.invalid"
 fx_arbitrum_sepolia_rpc_url="https://disabled.invalid"
 if [[ "${fx_broker_enabled}" == "true" ]]; then
   fx_broker_key=$(aws ssm get-parameter --region "${region}" --name "${fx_broker_key_parameter_name}" --with-decryption --query Parameter.Value --output text)
+  fx_exact_settler_key=$(aws ssm get-parameter --region "${region}" --name "${fx_exact_settler_key_parameter_name}" --with-decryption --query Parameter.Value --output text)
   fx_base_sepolia_rpc_url=$(aws ssm get-parameter --region "${region}" --name "${fx_base_sepolia_rpc_parameter_name}" --with-decryption --query Parameter.Value --output text)
   fx_arbitrum_sepolia_rpc_url=$(aws ssm get-parameter --region "${region}" --name "${fx_arbitrum_sepolia_rpc_parameter_name}" --with-decryption --query Parameter.Value --output text)
   if (
     [[ ! "$fx_broker_key" =~ ^0x[0-9a-fA-F]{64}$ ]] ||
+    [[ ! "$fx_exact_settler_key" =~ ^0x[0-9a-fA-F]{64}$ ]] ||
     [[ ! "$fx_base_sepolia_rpc_url" =~ ^https:// ]] ||
     [[ ! "$fx_arbitrum_sepolia_rpc_url" =~ ^https:// ]]
   ); then
@@ -64,8 +67,15 @@ if [[ "${fx_broker_enabled}" == "true" ]]; then
     echo "Versus FX broker must not reuse the rain attestor key" >&2
     exit 1
   fi
+  if [[ "$${fx_exact_settler_key,,}" == "$${rain_attestor_key,,}" ]] ||
+     [[ "$${fx_exact_settler_key,,}" == "$${fx_broker_key,,}" ]]; then
+    echo "Versus exact settler must not reuse another relay identity" >&2
+    exit 1
+  fi
   install -o 1000 -g 1000 -m 0400 /dev/null /var/lib/versus-fx-secrets/broker-key
   printf '%s\n' "$fx_broker_key" > /var/lib/versus-fx-secrets/broker-key
+  install -o 1000 -g 1000 -m 0400 /dev/null /var/lib/versus-fx-secrets/exact-settler-key
+  printf '%s\n' "$fx_exact_settler_key" > /var/lib/versus-fx-secrets/exact-settler-key
 fi
 
 graduation_keeper_key=""
@@ -77,6 +87,12 @@ if [[ "${graduation_keeper_enabled}" == "true" ]]; then
   fi
   if [[ "$${graduation_keeper_key,,}" == "$${rain_attestor_key,,}" ]]; then
     echo "Versus graduation keeper must not reuse the rain attestor key" >&2
+    exit 1
+  fi
+  if [[ "${fx_broker_enabled}" == "true" ]] &&
+     { [[ "$${graduation_keeper_key,,}" == "$${fx_broker_key,,}" ]] ||
+       [[ "$${graduation_keeper_key,,}" == "$${fx_exact_settler_key,,}" ]]; }; then
+    echo "Versus graduation keeper must not reuse an FX identity" >&2
     exit 1
   fi
 fi
@@ -117,6 +133,8 @@ VERSUS_FX_BASE_SEPOLIA_RPC_URL=$fx_base_sepolia_rpc_url
 VERSUS_FX_ARBITRUM_SEPOLIA_RPC_URL=$fx_arbitrum_sepolia_rpc_url
 VERSUS_FX_BROKER_DATA_DIR=/var/lib/versus-fx-broker
 VERSUS_FX_BROKER_KEY_PATH=/var/lib/versus-fx-secrets/broker-key
+VERSUS_FX_EXACT_SETTLER_KEY_PATH=/var/lib/versus-fx-secrets/exact-settler-key
+VERSUS_FX_EXACT_FACILITATOR_FEE_ATOMIC=1000
 VERSUS_FX_BROKER_HEALTH_PORT=18788
 VERSUS_BASE_RPC_URL=$base_rpc_url
 VERSUS_CHAIN_ID=${chain_id}
@@ -144,7 +162,7 @@ VERSUS_NODE_DATA_DIR=/var/lib/versus-node
 VERSUS_NODE_HEALTH_PORT=18787
 EOF
 chmod 0600 /opt/versus-waku-relay/.env
-unset fx_broker_key rain_attestor_key graduation_keeper_key
+unset fx_broker_key fx_exact_settler_key rain_attestor_key graduation_keeper_key
 
 cat > /etc/systemd/system/versus-waku-relay.service <<'EOF'
 [Unit]

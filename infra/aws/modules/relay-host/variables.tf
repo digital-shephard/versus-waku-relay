@@ -53,6 +53,11 @@ variable "fx_broker_key_parameter_name" {
   default = null
 }
 
+variable "fx_exact_settler_key_parameter_name" {
+  type    = string
+  default = null
+}
+
 variable "fx_base_sepolia_rpc_parameter_name" {
   type    = string
   default = null

@@ -33,19 +33,24 @@ if (String(env.VERSUS_HATCH_QUOTE_ENABLED ?? "true").toLowerCase() !== "false") 
 
 let fxBroker = { enabled: false };
 if (String(env.VERSUS_FX_ENABLED || "false").toLowerCase() === "true") {
-  const fxResponse = await fetch(
-    `https://${env.PUBLIC_DOMAIN}/v1/fx/swaps`,
-    {
+  const endpoints = {};
+  for (const [name, path] of [
+    ["custom", "/v1/fx/swaps"],
+    ["exact", "/v1/fx/exact"],
+  ]) {
+    const endpoint = `https://${env.PUBLIC_DOMAIN}${path}`;
+    const fxResponse = await fetch(endpoint, {
       method: "OPTIONS",
       signal: AbortSignal.timeout(10_000),
+    });
+    if (fxResponse.status !== 204) {
+      throw new Error(`public ${name} FX endpoint preflight failed: HTTP ${fxResponse.status}`);
     }
-  );
-  if (fxResponse.status !== 204) {
-    throw new Error(`public FX endpoint preflight failed: HTTP ${fxResponse.status}`);
+    endpoints[name] = endpoint;
   }
   fxBroker = {
     enabled: true,
-    endpoint: `https://${env.PUBLIC_DOMAIN}/v1/fx/swaps`,
+    endpoints,
   };
 }
 

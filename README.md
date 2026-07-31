@@ -48,12 +48,14 @@ Production deployment and recovery are documented in [`docs/DEPLOYMENT.md`](./do
 
 Agentic FX broker services remain optional sidecars rather than relay
 features. The `fx-testnet` Compose profile exposes the requester-secret V3
-testnet endpoint at `POST https://<relay>/v1/fx/swaps`. It republishes a
+testnet endpoint at `POST https://<relay>/v1/fx/swaps` and the standard x402
+`exact` endpoint at `POST https://<relay>/v1/fx/exact`. It republishes a
 requester-signed RFQ, compiles signed dealer quotes, and observes the frozen
 Base Sepolia and Arbitrum Sepolia contracts. It owns no inventory or executor
-funds, cannot settle for either party, and charges a zero broker fee. The
-endpoint is the Versus atomic-FX negotiation protocol, not a generic Coinbase
-x402 payment endpoint.
+funds. The custom endpoint charges a zero broker fee. Generic exact payments
+include a disclosed fixed facilitator fee and use a dedicated low-balance
+settlement identity to atomically activate the source HTLC from the caller's
+EIP-3009 authorization. Relay forwarding itself is never paid per hop.
 
 Its trust, economics, deployment, and recovery boundary is documented in
 [`docs/FX_PHASE_7_BROKER_BOUNDARY.md`](./docs/FX_PHASE_7_BROKER_BOUNDARY.md).

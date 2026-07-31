@@ -31,17 +31,20 @@ Never expose ports 8645 or 8008 publicly. Never use the deterministic keys from 
 This is testnet-only. Do not put mainnet RPCs, production funds, dealer
 inventory, or a Cypher key on either relay.
 
-For each host create three region-local `SecureString` parameters:
+For each host create four region-local `SecureString` parameters:
 
 ```text
 /versus/production/relay-a/fx-broker-key
+/versus/production/relay-a/fx-exact-settler-key
 /versus/production/relay-a/fx-base-sepolia-rpc-url
 /versus/production/relay-a/fx-arbitrum-sepolia-rpc-url
 ```
 
 Use the corresponding `relay-b` names in its region. Broker keys must be
-unique per host and distinct from rain, keeper, deployment, requester, dealer,
-and Waku identities. Configure `fx.enabled = true`, freeze the repository to
+unique per host and distinct from the exact settler, rain, keeper, deployment,
+requester, dealer, and Waku identities. The exact settler key must also be
+unique per host and funded with only a small testnet gas balance. Configure
+`fx.enabled = true`, freeze the repository to
 the reviewed commit, run `terraform plan`, and apply only the IAM policy
 changes. Existing hosts ignore changed user data by design.
 
@@ -50,13 +53,14 @@ After the reviewed commit is present on a host, enable through SSM:
 ```sh
 sudo AWS_REGION=<region> \
   FX_BROKER_KEY_PARAMETER_NAME=<broker-key-parameter> \
+  FX_EXACT_SETTLER_KEY_PARAMETER_NAME=<settler-key-parameter> \
   FX_BASE_SEPOLIA_RPC_PARAMETER_NAME=<base-rpc-parameter> \
   FX_ARBITRUM_SEPOLIA_RPC_PARAMETER_NAME=<arbitrum-rpc-parameter> \
   /opt/versus-waku-relay/deploy/enable-fx-testnet.sh
 ```
 
-The script fetches secrets directly from SSM, writes the broker key to a
-mode-0400 file, preserves any existing broker journal, builds the vendored
+The script fetches secrets directly from SSM, writes both FX keys to separate
+mode-0400 files, preserves any existing broker journal, builds the vendored
 runtime, starts the `fx-testnet` profile, and waits on loopback health. It
 never writes the private key into `.env`.
 
@@ -65,6 +69,8 @@ Validate both public hosts:
 ```sh
 curl -i -X OPTIONS https://relay-a.versuscypher.com/v1/fx/swaps
 curl -i -X OPTIONS https://relay-b.versuscypher.com/v1/fx/swaps
+curl -i -X OPTIONS https://relay-a.versuscypher.com/v1/fx/exact
+curl -i -X OPTIONS https://relay-b.versuscypher.com/v1/fx/exact
 ```
 
 After each host starts, verify its exact checkout, frozen broker package,

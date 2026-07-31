@@ -2,6 +2,8 @@
   "schema": "versus-fx-evm-v3-capabilities",
   "schemaVersion": 3,
   "settlementMode": "requester-secret-source-first-compact",
+  "deploymentId": "0x5f6e0d22253c91a77b25e50add622e1e172c8a7f30a4b1cbfb652e8d680dbf45",
+  "coordinationDomain": "0x6e5a6b5ed65eac32898129a87fbcb68b870469b348c52645fe2170f03e04df9a",
   "builds": {
     "native": {
       "adapterId": "evm-native-htlc-v3",
@@ -10,15 +12,11 @@
       "sourcePath": "versus/contracts/fx/EvmNativeHtlcV3.sol",
       "sourceTag": "agentic-fx-requester-secret-v3",
       "compiler": "0.8.26",
-      "compilerLongVersion": "0.8.26+commit.8a97fa7a",
       "evmVersion": "cancun",
       "optimizerRuns": 1,
       "viaIR": true,
       "sourceSha256": "0xa23e6d5118ca862eb55fb7d70e2b1cb5b7ec94c403cf101e29797d2e31b6d1b6",
-      "creationCodeHash": "0xc661336012b2e2629502dd380520ca449b875d447db917826ba741df3c4e0d54",
-      "runtimeTemplateHash": "0x7c425905df36ba2ceeedbef5e0cefd2d44fe16f32c671c5a3f3fc117d8d007ce",
-      "creationCodeBytes": 3223,
-      "runtimeTemplateBytes": 2875
+      "creationCodeHash": "0xc661336012b2e2629502dd380520ca449b875d447db917826ba741df3c4e0d54"
     },
     "erc20": {
       "adapterId": "evm-htlc-v3",
@@ -27,15 +25,11 @@
       "sourcePath": "versus/contracts/fx/EvmHtlcV3.sol",
       "sourceTag": "agentic-fx-requester-secret-v3",
       "compiler": "0.8.26",
-      "compilerLongVersion": "0.8.26+commit.8a97fa7a",
       "evmVersion": "cancun",
       "optimizerRuns": 1,
       "viaIR": true,
       "sourceSha256": "0xfcdef75ab5add995a809a2631cab73f6e6b72e40ee6bee7e91b8a6b1c7e01921",
-      "creationCodeHash": "0x9fabd7ae8433f0e1696e94b1faf83a0138d297d3b293909ef80b1de32c181e3f",
-      "runtimeTemplateHash": "0x742f48b4fc1caf97f55a02da259ea78ba744f76f0198c901d178a5f5bba18cfd",
-      "creationCodeBytes": 5657,
-      "runtimeTemplateBytes": 5047
+      "creationCodeHash": "0x9fabd7ae8433f0e1696e94b1faf83a0138d297d3b293909ef80b1de32c181e3f"
     }
   },
   "capabilities": [
@@ -48,13 +42,13 @@
         "assetId": "native:eth"
       },
       "erc20": {
-        "adapterAddress": "0xb9c06839b81421e0899510706300d1f1b2623a18",
-        "runtimeCodeHash": "0xf87ead5cb8f791b62bc044901a13cb2850055a49d4652083c6407425870647d8",
-        "deploymentBlock": 44804174,
+        "adapterAddress": "0x4b7603b6731b2fc10064e2bda099ce291398c826",
+        "runtimeCodeHash": "0x6ab5286c04e4fe1409256bcde79b4d370b37acb342c85d38c4720ea6202d1cb0",
+        "deploymentBlock": 44877926,
         "asset": {
-          "address": "0xcba3d9354dd4c30bb6961abb4473a6340486e01b",
-          "runtimeCodeHash": "0x47270bb5191904282585120908012270a6b00247826d4a262e824e2a41f0de7b",
-          "symbol": "tUSDC",
+          "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+          "runtimeCodeHash": "0xedc5281a85c0efecd49999a1ef668390c59b88702f2d4a07029d7f5d63059d6c",
+          "symbol": "USDC",
           "decimals": 6,
           "standard": "ERC20"
         }
@@ -79,13 +73,13 @@
         "assetId": "native:eth"
       },
       "erc20": {
-        "adapterAddress": "0xb9c06839b81421e0899510706300d1f1b2623a18",
-        "runtimeCodeHash": "0x4c6e9222f59791ee1f7dc14853884626fe972a220a8de9fc7f02507f94425404",
-        "deploymentBlock": 292768635,
+        "adapterAddress": "0x77484fc7203f25b92e95327116b4d5ca92c8b019",
+        "runtimeCodeHash": "0xd1d39b642470aeb2cbdcc4246247db50c55fa73f3aa1d33ced90a70cc1bc8aa3",
+        "deploymentBlock": 293360293,
         "asset": {
-          "address": "0xcba3d9354dd4c30bb6961abb4473a6340486e01b",
-          "runtimeCodeHash": "0x47270bb5191904282585120908012270a6b00247826d4a262e824e2a41f0de7b",
-          "symbol": "tUSDC",
+          "address": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
+          "runtimeCodeHash": "0x9a736af6aac290d9196883e8686fc1d127ff657ca534fe4b88d6d40dc0bc6750",
+          "symbol": "USDC",
           "decimals": 6,
           "standard": "ERC20"
         }
@@ -102,121 +96,101 @@
       }
     }
   ],
-  "deploymentId": "0x1edf9c4dca5cbcb8b1875f4ce950844237258367d51e5d02dc3de577b3088494",
-  "coordinationDomain": "0x6d2d3f9784460521d35605b450e5a46fc1c068df7724265c8f12fec7f1693b2c",
   "evidence": {
     "84532": {
       "deployer": "0xc69f8ec01a8e86ed071b410683ba005c8a925cf8",
-      "native": {
-        "transactionHash": "0x9c3e544e389def167e39e22c3e753c769ae296435030eaa04bc0306f9285bba3",
-        "gasUsed": "678993",
-        "constructorArguments": {
-          "minimumLockDuration": 60,
-          "maximumLockDuration": 604800
-        },
-        "explorerUrl": "https://sepolia.basescan.org/address/0x9ff9e978801b7819fa4169638814543028d0c0f2#code",
-        "verification": {
-          "status": "verified",
-          "sourceVerified": true,
-          "verifiedAt": "2026-07-30T02:09:18.125Z"
-        }
-      },
       "erc20": {
-        "transactionHash": "0x93baaa68234cbcaceaafc0aeb26715d3123fbe37b80eb8d71348e933e5767493",
-        "gasUsed": "1155083",
+        "transactionHash": "0x076cd6dedc7cd36004de3ce1934a9e06b5a2d275393e7973323ee6d158619dbe",
+        "gasUsed": "1164385",
         "constructorArguments": {
-          "asset": "0xcba3d9354dd4c30bb6961abb4473a6340486e01b",
+          "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
           "expectedDecimals": 6,
           "minimumLockDuration": 60,
           "maximumLockDuration": 604800
         },
-        "explorerUrl": "https://sepolia.basescan.org/address/0xb9c06839b81421e0899510706300d1f1b2623a18#code",
+        "explorerUrl": "https://sepolia.basescan.org/address/0x4b7603b6731b2fc10064e2bda099ce291398c826#code",
         "verification": {
           "status": "verified",
           "sourceVerified": true,
-          "verifiedAt": "2026-07-30T02:09:18.125Z"
+          "verifiedAt": "2026-07-31T18:56:58.000Z"
+        }
+      },
+      "exactFactory": {
+        "transactionHash": "0xcdcb1f664a32b01d2a9342e603ae5b2e9249da03461253732ce7a3de24e7fed5",
+        "gasUsed": "1862214",
+        "constructorArguments": {
+          "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+          "htlc": "0x4b7603b6731b2fc10064e2bda099ce291398c826"
+        },
+        "explorerUrl": "https://sepolia.basescan.org/address/0x8068abc9b18ca40247a6545e1567d0a867714f94#code",
+        "verification": {
+          "status": "verified",
+          "sourceVerified": true,
+          "verifiedAt": "2026-07-31T18:56:58.000Z"
         }
       },
       "preflight": {
         "chainId": "84532",
-        "native": {
-          "adapterAddress": "0x9ff9e978801b7819fa4169638814543028d0c0f2",
-          "runtimeCodeHash": "0x41690a8f1d61c02dfa80d021f7fea384718d8203f379a9677de960db647e7d9b",
-          "deploymentBlock": 44804172,
-          "adapterVersion": 3,
-          "minimumLockDuration": 60,
-          "maximumLockDuration": 604800,
-          "domainSeparator": "0x7dc236c8042215b61a765352160108e4ba3d4f716a12af2dc74ccd01e5e0b861"
+        "token": {
+          "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+          "runtimeCodeHash": "0xedc5281a85c0efecd49999a1ef668390c59b88702f2d4a07029d7f5d63059d6c",
+          "symbol": "USDC",
+          "name": "USDC",
+          "version": "2",
+          "decimals": 6,
+          "domainSeparator": "0x71f17a3b2ff373b803d70a5a07c046c1a2bc8e89c09ef722fcb047abe94c9818"
         },
-        "erc20": {
-          "adapterAddress": "0xb9c06839b81421e0899510706300d1f1b2623a18",
-          "runtimeCodeHash": "0xf87ead5cb8f791b62bc044901a13cb2850055a49d4652083c6407425870647d8",
-          "deploymentBlock": 44804174,
-          "adapterVersion": 3,
-          "asset": "0xcba3d9354dd4c30bb6961abb4473a6340486e01b",
-          "assetDecimals": 6,
-          "minimumLockDuration": 60,
-          "maximumLockDuration": 604800,
-          "domainSeparator": "0x90086ed926f1aeab646b5803be2bfe378b5374a47fc43615c7d564919192c1ea"
-        },
-        "tokenRuntimeCodeHash": "0x47270bb5191904282585120908012270a6b00247826d4a262e824e2a41f0de7b"
+        "erc20AdapterVersion": 3,
+        "factoryAsset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "factoryHtlc": "0x4b7603b6731b2fc10064e2bda099ce291398c826"
       }
     },
     "421614": {
       "deployer": "0xc69f8ec01a8e86ed071b410683ba005c8a925cf8",
-      "native": {
-        "transactionHash": "0xd9eb08fd74b6f76d2b19cb0ac9dd723705af759cb421404589c76cd7b09e0e5b",
-        "gasUsed": "740525",
-        "constructorArguments": {
-          "minimumLockDuration": 60,
-          "maximumLockDuration": 604800
-        },
-        "explorerUrl": "https://sepolia.arbiscan.io/address/0x9ff9e978801b7819fa4169638814543028d0c0f2#code",
-        "verification": {
-          "status": "verified",
-          "sourceVerified": true,
-          "verifiedAt": "2026-07-30T02:09:44.276Z"
-        }
-      },
       "erc20": {
-        "transactionHash": "0x2030071ed313dc5dd3236c23446600819903ebd3d6668eb17909555f5861f0e3",
-        "gasUsed": "1252113",
+        "transactionHash": "0x85db414538ae6c13d268dc18473e0592ac8425c4f98794b310f095ca286cf944",
+        "gasUsed": "1917551",
         "constructorArguments": {
-          "asset": "0xcba3d9354dd4c30bb6961abb4473a6340486e01b",
+          "asset": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
           "expectedDecimals": 6,
           "minimumLockDuration": 60,
           "maximumLockDuration": 604800
         },
-        "explorerUrl": "https://sepolia.arbiscan.io/address/0xb9c06839b81421e0899510706300d1f1b2623a18#code",
+        "explorerUrl": "https://sepolia.arbiscan.io/address/0x77484fc7203f25b92e95327116b4d5ca92c8b019#code",
         "verification": {
           "status": "verified",
           "sourceVerified": true,
-          "verifiedAt": "2026-07-30T02:09:44.276Z"
+          "verifiedAt": "2026-07-31T18:57:06.298Z"
+        }
+      },
+      "exactFactory": {
+        "transactionHash": "0x2f25032668b03222f5e58f7fa0e57f1d8d9b021ef9ab417f1f8b2e71af3fcee9",
+        "gasUsed": "2858694",
+        "constructorArguments": {
+          "asset": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
+          "htlc": "0x77484fc7203f25b92e95327116b4d5ca92c8b019"
+        },
+        "explorerUrl": "https://sepolia.arbiscan.io/address/0xef6461bea59087d090b306e359f7303d68315f24#code",
+        "verification": {
+          "status": "verified",
+          "sourceVerified": true,
+          "verifiedAt": "2026-07-31T18:57:06.298Z"
         }
       },
       "preflight": {
         "chainId": "421614",
-        "native": {
-          "adapterAddress": "0x9ff9e978801b7819fa4169638814543028d0c0f2",
-          "runtimeCodeHash": "0x4a2d48e907b541f3934e2a57368b0a82abc1af6420170d00c592bcbee19b3453",
-          "deploymentBlock": 292768615,
-          "adapterVersion": 3,
-          "minimumLockDuration": 60,
-          "maximumLockDuration": 604800,
-          "domainSeparator": "0xc2139668cea840d69e8630459bbac8909b04831c0e95894cb159e01a00b41321"
+        "token": {
+          "address": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
+          "runtimeCodeHash": "0x9a736af6aac290d9196883e8686fc1d127ff657ca534fe4b88d6d40dc0bc6750",
+          "symbol": "USDC",
+          "name": "USD Coin",
+          "version": "2",
+          "decimals": 6,
+          "domainSeparator": "0x85944e1292d007732838d6eadfa67589b78ffcededbd4df60488d0af251308bb"
         },
-        "erc20": {
-          "adapterAddress": "0xb9c06839b81421e0899510706300d1f1b2623a18",
-          "runtimeCodeHash": "0x4c6e9222f59791ee1f7dc14853884626fe972a220a8de9fc7f02507f94425404",
-          "deploymentBlock": 292768635,
-          "adapterVersion": 3,
-          "asset": "0xcba3d9354dd4c30bb6961abb4473a6340486e01b",
-          "assetDecimals": 6,
-          "minimumLockDuration": 60,
-          "maximumLockDuration": 604800,
-          "domainSeparator": "0xf2982f6f72998d3463d90701f4064d971882ebd7696f5087ac7fe4f9fd0fea1d"
-        },
-        "tokenRuntimeCodeHash": "0x47270bb5191904282585120908012270a6b00247826d4a262e824e2a41f0de7b"
+        "erc20AdapterVersion": 3,
+        "factoryAsset": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
+        "factoryHtlc": "0x77484fc7203f25b92e95327116b4d5ca92c8b019"
       }
     }
   }

@@ -57,7 +57,7 @@ workflow rather than putting values directly on a command line.
 
 Copy `backend.hcl.example` to `backend.hcl` and
 `terraform.tfvars.example` to `terraform.tfvars`. Both local files are ignored.
-Set the hosted zone, immutable repository ref, domains, regions, the three required parameter names per node, any explicitly enabled keeper parameter, opposite relay PeerIDs, canonical Arena address, deployment start block, 12-second rain polling, quote refresh/scan/cache intervals, confirmations, and provider credit limits. The defaults project 2,665,440 provider credits per node per day before an optional graduation keeper and throttle bursts to 500 credits per second.
+Set the hosted zone, immutable repository ref, domains, regions, all required parameter names per node, any explicitly enabled keeper parameter, opposite relay PeerIDs, canonical Arena address, deployment start block, 12-second rain polling, quote refresh/scan/cache intervals, confirmations, and provider credit limits. FX-enabled nodes require separate broker and exact-settler keys plus both testnet RPC parameters. The defaults project 2,665,440 provider credits per node per day before an optional graduation keeper and throttle bursts to 500 credits per second.
 
 ## 4. Apply
 
