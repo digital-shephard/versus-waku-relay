@@ -1,0 +1,49 @@
+{
+  "schema": "versus-fx-relay-wallet-management",
+  "schemaVersion": 1,
+  "exactFactoriesManifest": "config/fx-x402-exact-factories.json",
+  "chains": [
+    {
+      "chainId": "84532",
+      "network": "eip155:84532",
+      "label": "Base Sepolia",
+      "nativeSymbol": "ETH",
+      "rpcEnv": "VERSUS_FX_BASE_SEPOLIA_RPC_URL",
+      "feeAssets": [
+        {
+          "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+          "symbol": "USDC",
+          "decimals": 6
+        }
+      ],
+      "gasPolicy": {
+        "estimatedGasPerSettlement": "2000000",
+        "minimumTransactions": 25,
+        "targetTransactions": 250,
+        "minimumAbsoluteAtomic": "1000000000000000",
+        "targetAbsoluteAtomic": "5000000000000000"
+      }
+    },
+    {
+      "chainId": "421614",
+      "network": "eip155:421614",
+      "label": "Arbitrum Sepolia",
+      "nativeSymbol": "ETH",
+      "rpcEnv": "VERSUS_FX_ARBITRUM_SEPOLIA_RPC_URL",
+      "feeAssets": [
+        {
+          "asset": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
+          "symbol": "USDC",
+          "decimals": 6
+        }
+      ],
+      "gasPolicy": {
+        "estimatedGasPerSettlement": "2000000",
+        "minimumTransactions": 25,
+        "targetTransactions": 250,
+        "minimumAbsoluteAtomic": "1000000000000000",
+        "targetAbsoluteAtomic": "5000000000000000"
+      }
+    }
+  ]
+}

@@ -16,6 +16,10 @@
     "health": "node scripts/health.mjs",
     "smoke": "node scripts/smoke.mjs",
     "accept:fx:public": "node scripts/fx-public-acceptance.mjs",
+    "wallet:status": "node scripts/fx-wallet.mjs status",
+    "wallet:funding-plan": "node scripts/fx-wallet.mjs funding-plan",
+    "wallet:verify": "node scripts/fx-wallet.mjs verify",
+    "wallet:sweep": "node scripts/fx-wallet.mjs sweep",
     "backup": "node scripts/backup.mjs",
     "restore": "node scripts/restore.mjs",
     "node": "node src/main.mjs",
@@ -27,6 +31,9 @@
     "logs": "docker compose --env-file .env -f deploy/docker-compose.yml logs -f --tail=200"
   },
   "dependencies": {
+    "@x402/core": "^2.20.0",
+    "@x402/evm": "^2.20.0",
+    "@x402/fetch": "^2.20.0",
     "ethers": "^6.17.0"
   }
 }

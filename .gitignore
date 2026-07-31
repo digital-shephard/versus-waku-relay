@@ -9,6 +9,7 @@ node-data/
 logs/
 runtime/
 backups/
+wallet-recovery/
 *.log
 *.pid
 *.key

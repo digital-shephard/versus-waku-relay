@@ -42,6 +42,20 @@ npm run health
 npm run smoke
 ```
 
+When FX is enabled, inspect the settlement wallet fleet with:
+
+```sh
+npm run wallet:status
+npm run wallet:funding-plan
+npm run wallet:verify
+```
+
+These commands report native gas runway separately from earned facilitator
+tokens and never print private keys. An operator may explicitly consolidate
+earned EIP-3009 fees through Versus with `npm run wallet:sweep`; see
+[`docs/FX_WALLET_OPERATIONS.md`](./docs/FX_WALLET_OPERATIONS.md). Sweeping is
+never automatic and never uses dealer inventory or HTLC principal.
+
 Run the same repository on a second independently hosted machine with different Waku and rain-attestor keys. Publish both attestor addresses in the Cypher deployment configuration. Multiple nodes may announce the same chain event; clients deduplicate by `chainId + Arena + transactionHash + logIndex`. Graduation submission can remain disabled everywhere, be enabled on one operator node, or be enabled independently by several operators who accept the possibility of a losing race and reverted gas.
 
 Production deployment and recovery are documented in [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) and [`docs/OPERATIONS.md`](./docs/OPERATIONS.md). The security boundary is documented in [`docs/SECURITY.md`](./docs/SECURITY.md).
