@@ -4,6 +4,7 @@ import { loadNodeConfig } from "./config.mjs";
 import { GraduationKeeper } from "./graduation-keeper.mjs";
 import { GraduationStateStore } from "./graduation-state-store.mjs";
 import { HatchQuoteService } from "./hatch-quote.mjs";
+import { FxPriceReferenceService } from "./fx-price-reference.mjs";
 import { RainIndexer } from "./rain-indexer.mjs";
 import { CreditMeteredRpc } from "./rpc.mjs";
 import { StateStore } from "./state-store.mjs";
@@ -70,6 +71,19 @@ const classState = new ClassStateService({
   validMs: config.classStateValidMs,
   staleMs: config.classStateStaleMs,
 });
+const fxPriceReference = config.fxPriceReferenceEnabled ? new FxPriceReferenceService({
+  rpcs: {
+    base: rpc,
+    avalanche: new CreditMeteredRpc(config.avalancheRpcUrl, {
+      dailyCreditBudget: 500_000,
+      creditsPerSecond: config.rpcCreditsPerSecond,
+    }),
+  },
+  privateKey: config.privateKey,
+  cachePath: config.fxPriceReferenceCachePath,
+  validMs: config.fxPriceReferenceValidMs,
+  staleMs: config.fxPriceReferenceStaleMs,
+}) : null;
 
 const server = http.createServer((request, response) => {
   if (request.url === "/v1/hatch-quote") {
@@ -115,6 +129,26 @@ const server = http.createServer((request, response) => {
     response.end(request.method === "HEAD" ? undefined : JSON.stringify(state));
     return;
   }
+  if (request.url === "/v1/fx/prices") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      response.writeHead(405, { allow: "GET, HEAD" }).end();
+      return;
+    }
+    const reference = fxPriceReference?.snapshot();
+    if (!reference) {
+      response.writeHead(503, { "content-type": "application/json", "cache-control": "no-store" });
+      response.end(request.method === "HEAD" ? undefined : JSON.stringify({ ok: false, error: "fx_prices_unavailable" }));
+      return;
+    }
+    response.writeHead(200, {
+      "content-type": "application/json",
+      "cache-control": "public, max-age=15, stale-while-revalidate=120",
+      "access-control-allow-origin": "*",
+      etag: `"${reference.signature.slice(2, 18)}"`,
+    });
+    response.end(request.method === "HEAD" ? undefined : JSON.stringify(reference));
+    return;
+  }
   if (request.url !== "/health" && request.url !== "/metrics") {
     response.writeHead(404).end();
     return;
@@ -131,6 +165,7 @@ const server = http.createServer((request, response) => {
     graduation: graduationKeeper.status(),
     hatchQuote: hatchQuote?.status() || { available: false, freshness: "disabled" },
     classState: classState.status(),
+    fxPriceReference: fxPriceReference?.status() || { available: false, freshness: "disabled" },
     fxTransport: fxTransportStatus(),
     ...(request.url === "/metrics" ? {
       chainId: config.chainId,
@@ -187,11 +222,23 @@ async function refreshClassState() {
 await refreshClassState();
 const classStateTimer = setInterval(refreshClassState, config.classStateRefreshMs);
 classStateTimer.unref?.();
+if (fxPriceReference) {
+  fxPriceReference.refresh().catch((error) => {
+    process.stderr.write(`${JSON.stringify({ level: "error", event: "fx_price_reference_refresh", message: error.message })}\n`);
+  });
+}
+const fxPriceReferenceTimer = fxPriceReference ? setInterval(() => {
+  fxPriceReference.refresh().catch((error) => {
+    process.stderr.write(`${JSON.stringify({ level: "error", event: "fx_price_reference_refresh", message: error.message })}\n`);
+  });
+}, config.fxPriceReferenceRefreshMs) : null;
+fxPriceReferenceTimer?.unref?.();
 
 async function shutdown() {
   clearInterval(timer);
   if (hatchQuoteTimer) clearInterval(hatchQuoteTimer);
   clearInterval(classStateTimer);
+  if (fxPriceReferenceTimer) clearInterval(fxPriceReferenceTimer);
   await indexer.running?.catch(() => {});
   await graduationKeeper.running?.catch(() => {});
   server.close(() => process.exit(0));

@@ -35,6 +35,22 @@ export function loadNodeConfig(env = process.env) {
   const classStateRefreshMs = integer(env, "VERSUS_CLASS_STATE_REFRESH_MS", 60_000, 10_000, 86_400_000);
   const classStateValidMs = integer(env, "VERSUS_CLASS_STATE_VALID_MS", 180_000, classStateRefreshMs, 86_400_000);
   const classStateStaleMs = integer(env, "VERSUS_CLASS_STATE_STALE_MS", 900_000, classStateValidMs, 86_400_000);
+  const fxPriceReferenceEnabled = boolean(env, "VERSUS_FX_PRICE_REFERENCE_ENABLED", true);
+  const fxPriceReferenceRefreshMs = integer(env, "VERSUS_FX_PRICE_REFERENCE_REFRESH_MS", 60_000, 10_000, 86_400_000);
+  const fxPriceReferenceValidMs = integer(
+    env,
+    "VERSUS_FX_PRICE_REFERENCE_VALID_MS",
+    180_000,
+    fxPriceReferenceRefreshMs,
+    86_400_000,
+  );
+  const fxPriceReferenceStaleMs = integer(
+    env,
+    "VERSUS_FX_PRICE_REFERENCE_STALE_MS",
+    900_000,
+    fxPriceReferenceValidMs,
+    86_400_000,
+  );
   const dailyCreditBudget = integer(env, "VERSUS_RPC_DAILY_CREDIT_BUDGET", 3_000_000, 100_000, 1_000_000_000);
   const rpcCreditsPerSecond = integer(env, "VERSUS_RPC_CREDITS_PER_SECOND", 500, 255, 1_000_000);
   const projectedCreditsPerPoll = 335 + (graduationEnabled ? 160 : 0);
@@ -42,7 +58,11 @@ export function loadNodeConfig(env = process.env) {
   const quoteFullScansPerDay = hatchQuoteEnabled ? Math.ceil(86_400_000 / hatchQuoteFullScanMs) : 0;
   const projectedHatchQuoteCredits = (quoteRefreshesPerDay + (quoteFullScansPerDay * 2)) * 80;
   const projectedClassStateCredits = Math.ceil(86_400_000 / classStateRefreshMs) * 80;
-  const projectedBaseCredits = (Math.ceil(86_400_000 / pollMs) * projectedCreditsPerPoll) + projectedHatchQuoteCredits + projectedClassStateCredits;
+  const projectedFxPriceReferenceCredits = fxPriceReferenceEnabled
+    ? Math.ceil(86_400_000 / fxPriceReferenceRefreshMs) * 2 * 80
+    : 0;
+  const projectedBaseCredits = (Math.ceil(86_400_000 / pollMs) * projectedCreditsPerPoll) +
+    projectedHatchQuoteCredits + projectedClassStateCredits + projectedFxPriceReferenceCredits;
   if (projectedBaseCredits > dailyCreditBudget) {
     throw new Error(`rain polling projects ${projectedBaseCredits} credits/day above budget ${dailyCreditBudget}`);
   }
@@ -85,6 +105,14 @@ export function loadNodeConfig(env = process.env) {
     classStateValidMs,
     classStateStaleMs,
     projectedClassStateCredits,
+    fxPriceReferenceEnabled,
+    fxPriceReferenceRefreshMs,
+    fxPriceReferenceValidMs,
+    fxPriceReferenceStaleMs,
+    projectedFxPriceReferenceCredits,
+    avalancheRpcUrl: new URL(
+      env.VERSUS_AVALANCHE_RPC_URL || "https://api.avax.network/ext/bc/C/rpc",
+    ).toString(),
     graduationEnabled,
     graduationPrivateKey,
     graduationKeeper,
@@ -112,6 +140,9 @@ export function loadNodeConfig(env = process.env) {
     ),
     classStateCachePath: path.resolve(
       env.VERSUS_CLASS_STATE_CACHE_PATH || path.join(path.dirname(statePath), "class-state.json"),
+    ),
+    fxPriceReferenceCachePath: path.resolve(
+      env.VERSUS_FX_PRICE_REFERENCE_CACHE_PATH || path.join(path.dirname(statePath), "fx-price-reference.json"),
     ),
     healthPort: integer(env, "VERSUS_NODE_HEALTH_PORT", 8787, 1, 65_535),
   });

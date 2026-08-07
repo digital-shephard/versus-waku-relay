@@ -151,12 +151,37 @@ export function validateEnv(env, { allowPlaceholders = false } = {}) {
   const classStateRefreshMs = integer(env, "VERSUS_CLASS_STATE_REFRESH_MS", 10000, 86400000, 60000);
   const classStateValidMs = integer(env, "VERSUS_CLASS_STATE_VALID_MS", classStateRefreshMs, 86400000, 180000);
   integer(env, "VERSUS_CLASS_STATE_STALE_MS", classStateValidMs, 86400000, 900000);
+  const fxPriceReferenceEnabled = boolean(env, "VERSUS_FX_PRICE_REFERENCE_ENABLED", true);
+  const fxPriceReferenceRefreshMs = integer(
+    env,
+    "VERSUS_FX_PRICE_REFERENCE_REFRESH_MS",
+    10000,
+    86400000,
+    60000,
+  );
+  const fxPriceReferenceValidMs = integer(
+    env,
+    "VERSUS_FX_PRICE_REFERENCE_VALID_MS",
+    fxPriceReferenceRefreshMs,
+    86400000,
+    180000,
+  );
+  integer(env, "VERSUS_FX_PRICE_REFERENCE_STALE_MS", fxPriceReferenceValidMs, 86400000, 900000);
+  if (fxPriceReferenceEnabled && !/^https:\/\//.test(env.VERSUS_AVALANCHE_RPC_URL || "https://api.avax.network/ext/bc/C/rpc")) {
+    throw new Error("VERSUS_AVALANCHE_RPC_URL must use HTTPS when FX price references are enabled");
+  }
   const creditsPerPoll = 335 + (graduationEnabled ? 160 : 0);
   const quoteCredits = quoteEnabled
     ? (Math.ceil(86400000 / quoteRefreshMs) + (Math.ceil(86400000 / quoteFullScanMs) * 2)) * 80
     : 0;
   const classStateCredits = Math.ceil(86400000 / classStateRefreshMs) * 80;
-  if ((Math.ceil(86400000 / pollMs) * creditsPerPoll) + quoteCredits + classStateCredits > creditBudget) {
+  const fxPriceReferenceCredits = fxPriceReferenceEnabled
+    ? Math.ceil(86400000 / fxPriceReferenceRefreshMs) * 2 * 80
+    : 0;
+  if (
+    (Math.ceil(86400000 / pollMs) * creditsPerPoll) + quoteCredits +
+    classStateCredits + fxPriceReferenceCredits > creditBudget
+  ) {
     throw new Error("node poll and public cache intervals exceed the RPC daily credit budget");
   }
   integer(env, "VERSUS_RAIN_CONFIRMATIONS", 0, 10000, 2);

@@ -27,7 +27,7 @@ Never place these on a relay host:
 
 ## Exposed surface
 
-- Public: TCP 80/443 through Caddy, read-only cached `GET/HEAD /v1/hatch-quote`, optional bounded `POST /v1/fx/swaps` and `POST /v1/fx/exact` on public testnets, and nwaku TCP 60000.
+- Public: TCP 80/443 through Caddy, read-only cached `GET/HEAD /v1/hatch-quote` and `GET/HEAD /v1/fx/prices`, optional bounded `POST /v1/fx/swaps` and `POST /v1/fx/exact` on public testnets, and nwaku TCP 60000.
 - Private loopback: nwaku REST and metrics, Versus-node health, and optional FX-broker health.
 - Disabled: REST admin, public Docker socket, public database, custom execution hooks.
 
@@ -49,6 +49,14 @@ coordination messages. These are resource controls, not Sybil resistance.
 RLN for general postcard ingress remains future research. Rain verification is deliberately narrow and cannot inspect, rank, or suppress agent speech.
 
 The hatch quote is available before Cypher registration, so it has no identity gate. It is safe to expose because requests only read a bounded in-memory value and cannot trigger provider calls, signing, fee-tier probes, or writes. The quote is deployment-scoped and signed; clients reject unknown attestors, altered economics, invalid timestamps, and expired payloads. Normal HTTP connection and request limits still apply to protect host bandwidth and process availability.
+
+The FX price endpoint has the same request-time boundary: it serves only a
+scheduled signed cache. A compromised attestor can lie in its own snapshot,
+so one node is never sufficient for pricing. Clients require two distinct
+trusted signatures, immutable feed metadata, fresh oracle rounds, and bounded
+cross-node agreement. This reduces but does not eliminate correlated oracle,
+RPC, hosting, or attestor compromise; execution still fails closed when quorum
+is unavailable.
 
 The graduation journal contains a signed raw public transaction, not a private key. It is stored mode `0600` and safe to replay because it pins one class and the contract rejects duplicate graduation. A malicious RPC can delay or misreport reads just as it can for rain indexing; canonical contract state remains final, and the keeper checks the configured chain ID plus Arena-derived wiring before signing.
 

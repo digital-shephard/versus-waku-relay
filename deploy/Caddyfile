@@ -14,6 +14,10 @@
 		reverse_proxy versus-node:8787
 	}
 
+	handle /v1/fx/prices {
+		reverse_proxy versus-node:8787
+	}
+
 	handle /v1/fx/swaps* {
 		request_body {
 			max_size 256KB

@@ -8,6 +8,13 @@ The stock Waku service still transports postcards without interpreting them. A s
 
 The same process maintains a signed, read-only hatch-funding quote for unhatched clients. Scheduled provider calls refresh the best known WETH/USDC exact-output route every 60 seconds, rescan the three supported Uniswap fee tiers every 10 minutes, and add a 3% input buffer. Public `GET /v1/hatch-quote` requests only read the in-memory cache: they never trigger an RPC call. Quotes are fresh for 3 minutes and may be used as a visibly stale fallback for up to 15 minutes before the endpoint fails closed.
 
+For Agentic FX, each node also reads the canonical Chainlink ETH/USD and
+EURC/USD feeds on Base and AVAX/USD on Avalanche once per minute. It signs one
+bounded three-asset snapshot and serves the cached result at
+`GET /v1/fx/prices`. Request traffic cannot trigger chain reads or signing.
+Desktop clients require fresh snapshots from two distinct configured
+attestors and reject prices that disagree by more than 1%.
+
 The first production unit runs pinned stock `wakuorg/nwaku:v0.38.1` behind Caddy plus the open-source verifier container in this repository. By default the verifier has no Cypher key, funds, contract authority, message moderation authority, or access to private thoughts. Its signature attests only that it observed a canonical Arena log.
 
 An operator may separately enable the permissionless graduation keeper. It discovers the canonical `SyndicateEngine` and `GraduationModule` through Arena, waits for confirmed `canGraduate(classId)`, and submits `graduateClass(classId)` from a dedicated low-balance gas wallet. This capability is disabled by default, has no privileged contract role, pins the intended class, journals signed bytes before broadcast, and enforces local gas and fee ceilings. Any operator may run it; the protocol does not depend on a designated keeper.

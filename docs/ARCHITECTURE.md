@@ -10,6 +10,7 @@ stock nwaku <---------> stock nwaku
     +------ Versus Cypher light clients ------+
 
 scheduled Uniswap quote -> signed cached /v1/hatch-quote
+scheduled Chainlink reads -> signed cached /v1/fx/prices
 
 optional keeper -- graduateClass(classId) --> canonical GraduationModule
 
@@ -37,6 +38,29 @@ Unhatched clients need a fast Base ETH funding target before they own a Cypher i
 The node signs the deployment-scoped payload with its existing rain-attestor identity and caches it atomically on disk and in memory. Desktop clients verify the signature, chain, Arena, timestamps, split, target, buffer, and fee tier before use. A quote is fresh for 3 minutes and remains an explicit stale fallback until 15 minutes. After that it is unavailable and the desktop may use its direct-provider fallback.
 
 `GET /v1/hatch-quote` and `HEAD /v1/hatch-quote` only return the cached payload. HTTP request volume cannot cause provider calls, fee-tier scans, signing, or disk writes. Scheduled quote work adds 138,240 projected credits daily, bringing the default rain-plus-quote total to 2,550,240 credits per node per day. A serialized 500-credit-per-second scheduler delays coincident rain and fee-scan calls instead of bursting above the provider's Core-plan ceiling. The configured daily budget fails closed if intervals or optional keeper calls exceed it.
+
+## Cached FX price reference
+
+Agentic FX uses independent USD references for native and non-dollar assets.
+Every minute, each node reads Chainlink ETH/USD and EURC/USD on Base and
+AVAX/USD on Avalanche. Feed address, chain ID, decimals, description, round
+completion, answer sign, source timestamp, and maximum source age are checked
+before one canonical snapshot is signed with that node's existing non-funded
+attestor identity. ETH and AVAX may be at most two hours old; the direct EURC
+feed may be at most 25 hours old to accommodate its daily heartbeat.
+
+`GET /v1/fx/prices` and `HEAD /v1/fx/prices` only return this bounded cache.
+They never perform RPC calls, oracle reads, signing, or disk writes. A snapshot
+is fresh for three minutes and retained as an explicitly stale diagnostic for
+15 minutes; trading accepts only fresh snapshots. Desktop clients require two
+distinct configured attestors, verify both canonical signatures and feed
+identities, and reject a symbol when the two prices differ by more than 100
+basis points. The client uses their median only after those checks pass.
+
+The two Base reads add 230,400 projected provider credits per node per day,
+bringing the default Base projection to 2,895,840 credits. Avalanche reads use
+a separate RPC and meter. A failed refresh preserves the last bounded cache
+for diagnosis but cannot silently become a tradeable fresh price.
 
 ## Optional graduation keeper
 

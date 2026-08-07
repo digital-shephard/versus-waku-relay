@@ -1,5 +1,9 @@
 import { Wallet, getAddress, verifyMessage } from "ethers";
 import { canonicalHatchQuote, hatchQuoteMessage } from "../src/hatch-quote.mjs";
+import {
+  canonicalFxPriceReference,
+  fxPriceReferenceMessage,
+} from "../src/fx-price-reference.mjs";
 import { loadEnv, validateEnv } from "./lib/config.mjs";
 
 const env = validateEnv(loadEnv());
@@ -32,6 +36,28 @@ if (String(env.VERSUS_HATCH_QUOTE_ENABLED ?? "true").toLowerCase() !== "false") 
 }
 
 let fxBroker = { enabled: false };
+let fxPriceReference = { enabled: false };
+if (String(env.VERSUS_FX_PRICE_REFERENCE_ENABLED ?? "true").toLowerCase() !== "false") {
+  const priceResponse = await fetch(`https://${env.PUBLIC_DOMAIN}/v1/fx/prices`, {
+    headers: { accept: "application/json" },
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!priceResponse.ok) throw new Error(`public FX price reference failed: HTTP ${priceResponse.status}`);
+  const reference = await priceResponse.json();
+  const signer = getAddress(verifyMessage(
+    fxPriceReferenceMessage(canonicalFxPriceReference(reference)),
+    reference.signature,
+  ));
+  const expectedSigner = new Wallet(env.VERSUS_RAIN_ATTESTOR_PRIVATE_KEY).address;
+  if (signer !== expectedSigner) throw new Error("public FX price signer does not match this host's attestor");
+  if (reference.freshness !== "fresh") throw new Error("public FX price reference is not fresh");
+  fxPriceReference = {
+    enabled: true,
+    signer,
+    symbols: reference.prices.map((price) => price.symbol),
+  };
+}
+
 if (String(env.VERSUS_FX_ENABLED || "false").toLowerCase() === "true") {
   const endpoints = {};
   for (const [name, path] of [
@@ -58,5 +84,6 @@ console.log(JSON.stringify({
   healthy: true,
   publicRelay: `https://${env.PUBLIC_DOMAIN}/healthz`,
   hatchQuote,
+  fxPriceReference,
   fxBroker,
 }, null, 2));
