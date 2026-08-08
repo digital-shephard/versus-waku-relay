@@ -44,10 +44,13 @@ test("repository wallet and exact-factory manifests agree", () => {
   const walletManifest = loadWalletManifest(walletPath);
   const factoriesPath = path.resolve(process.cwd(), walletManifest.exactFactoriesManifest);
   const factories = loadExactFactories(factoriesPath, walletManifest);
-  assert.equal(factories.factories.length, walletManifest.chains.length);
+  const managedAssets = walletManifest.chains.flatMap((chain) =>
+    chain.feeAssets.map((asset) => `${chain.chainId}:${asset.asset}`)
+  ).sort();
+  assert.equal(factories.factories.length, managedAssets.length);
   assert.deepEqual(
-    factories.factories.map((entry) => entry.chainId).sort(),
-    walletManifest.chains.map((entry) => entry.chainId).sort()
+    factories.factories.map((entry) => `${entry.chainId}:${entry.asset}`).sort(),
+    managedAssets
   );
 });
 

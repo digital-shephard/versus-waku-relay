@@ -7,7 +7,7 @@ The host contains a Waku node key, a non-funded rain-attestor key, an RPC provid
 If the optional graduation keeper is enabled, the host also contains one funded EOA. It has no privileged contract role and can only invoke public methods, but compromise can spend that EOA's own ETH. Keep only a deliberately small gas balance, use the configured execution-fee ceiling, and never reuse a Cypher owner, deployer, Safe owner, Waku, or rain-attestor identity. Base's L1 data fee is additional; the wallet balance remains the final loss bound. Disable the keeper or replace its SSM key independently of rain attestation.
 
 If the public-testnet FX sidecar is enabled, the host also contains a distinct
-non-funded broker identity and Base Sepolia plus Arbitrum Sepolia read-only RPC
+non-funded broker identity and Base Sepolia plus Avalanche Fuji read-only RPC
 URLs. The broker key signs route proposals only. Generic exact additionally
 uses a separate low-balance settlement EOA that spends its own gas and receives
 the disclosed facilitator fee. It can submit only the caller-signed EIP-3009

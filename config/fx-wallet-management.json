@@ -4,14 +4,19 @@
   "exactFactoriesManifest": "config/fx-x402-exact-factories.json",
   "chains": [
     {
-      "chainId": "84532",
-      "network": "eip155:84532",
-      "label": "Base Sepolia",
-      "nativeSymbol": "ETH",
-      "rpcEnv": "VERSUS_FX_BASE_SEPOLIA_RPC_URL",
+      "chainId": "43113",
+      "network": "eip155:43113",
+      "label": "Avalanche Fuji",
+      "nativeSymbol": "AVAX",
+      "rpcEnv": "VERSUS_FX_AVALANCHE_FUJI_RPC_URL",
       "feeAssets": [
         {
-          "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+          "asset": "0x5e44db7996c682e92a960b65ac713a54ad815c6b",
+          "symbol": "EURC",
+          "decimals": 6
+        },
+        {
+          "asset": "0x5425890298aed601595a70ab815c96711a31bc65",
           "symbol": "USDC",
           "decimals": 6
         }
@@ -20,19 +25,24 @@
         "estimatedGasPerSettlement": "2000000",
         "minimumTransactions": 25,
         "targetTransactions": 250,
-        "minimumAbsoluteAtomic": "1000000000000000",
-        "targetAbsoluteAtomic": "5000000000000000"
+        "minimumAbsoluteAtomic": "50000000000000000",
+        "targetAbsoluteAtomic": "500000000000000000"
       }
     },
     {
-      "chainId": "421614",
-      "network": "eip155:421614",
-      "label": "Arbitrum Sepolia",
+      "chainId": "84532",
+      "network": "eip155:84532",
+      "label": "Base Sepolia",
       "nativeSymbol": "ETH",
-      "rpcEnv": "VERSUS_FX_ARBITRUM_SEPOLIA_RPC_URL",
+      "rpcEnv": "VERSUS_FX_BASE_SEPOLIA_RPC_URL",
       "feeAssets": [
         {
-          "asset": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
+          "asset": "0x808456652fdb597867f38412077a9182bf77359f",
+          "symbol": "EURC",
+          "decimals": 6
+        },
+        {
+          "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
           "symbol": "USDC",
           "decimals": 6
         }

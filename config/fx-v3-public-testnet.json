@@ -2,8 +2,8 @@
   "schema": "versus-fx-evm-v3-capabilities",
   "schemaVersion": 3,
   "settlementMode": "requester-secret-source-first-compact",
-  "deploymentId": "0x5f6e0d22253c91a77b25e50add622e1e172c8a7f30a4b1cbfb652e8d680dbf45",
-  "coordinationDomain": "0x6e5a6b5ed65eac32898129a87fbcb68b870469b348c52645fe2170f03e04df9a",
+  "deploymentId": "0x8cd9ede68d18e52213372ed6041bdb83867c5846119461c860d95f74e689ed54",
+  "coordinationDomain": "0x50aea8e208dd1de883d5f8b50eefe71f328b6b9aea996388d402f87ef4415ed9",
   "builds": {
     "native": {
       "adapterId": "evm-native-htlc-v3",
@@ -34,17 +34,74 @@
   },
   "capabilities": [
     {
+      "chainId": "43113",
+      "native": {
+        "adapterAddress": "0xcba3d9354dd4c30bb6961abb4473a6340486e01b",
+        "runtimeCodeHash": "0x0f51eacdef60b9977243513f18394a4e30227ac290d7e1845168d102e8706d69",
+        "deploymentBlock": 57618653,
+        "assetId": "native:avax"
+      },
+      "erc20": {
+        "adapterAddress": "0xe7a02dd38f9191d8ee20daa24b4feee911da334d",
+        "runtimeCodeHash": "0x0b00da6ab2639371f2d983b10c472820cc740b2ad0a6d045b558db6b57357b30",
+        "deploymentBlock": 57618656,
+        "asset": {
+          "address": "0x5425890298aed601595a70ab815c96711a31bc65",
+          "runtimeCodeHash": "0x7140a935aa3bb55d334d6d325fea277e47674770b10823feefa6f8b2c58af5fc",
+          "symbol": "USDC",
+          "decimals": 6,
+          "standard": "ERC20"
+        }
+      },
+      "erc20s": [
+        {
+          "adapterAddress": "0xe7a02dd38f9191d8ee20daa24b4feee911da334d",
+          "runtimeCodeHash": "0x0b00da6ab2639371f2d983b10c472820cc740b2ad0a6d045b558db6b57357b30",
+          "deploymentBlock": 57618656,
+          "asset": {
+            "address": "0x5425890298aed601595a70ab815c96711a31bc65",
+            "runtimeCodeHash": "0x7140a935aa3bb55d334d6d325fea277e47674770b10823feefa6f8b2c58af5fc",
+            "symbol": "USDC",
+            "decimals": 6,
+            "standard": "ERC20"
+          }
+        },
+        {
+          "adapterAddress": "0x9ddb82ee6eb48833906dec8e3196465dd5f5dff6",
+          "runtimeCodeHash": "0x44ac50b30f2c4e3630f99b6b7f8e07fced0fb18e6d941c406984470d6edd2bcc",
+          "deploymentBlock": 57618661,
+          "asset": {
+            "address": "0x5e44db7996c682e92a960b65ac713a54ad815c6b",
+            "runtimeCodeHash": "0x42a47b737fee964fdbcf73dd74b14defc4ad7e9c78763772f7cdb9ca31bf3710",
+            "symbol": "EURC",
+            "decimals": 6,
+            "standard": "ERC20"
+          }
+        }
+      ],
+      "confirmationPolicy": {
+        "requiredConfirmations": 1,
+        "reorgSafetyBlocks": 1
+      },
+      "timeoutPolicy": {
+        "minimumSeconds": 60,
+        "maximumSeconds": 604800,
+        "minimumCrossChainDeltaSeconds": 3600,
+        "minimumDestinationRelayWindowSeconds": 3600
+      }
+    },
+    {
       "chainId": "84532",
       "native": {
-        "adapterAddress": "0x9ff9e978801b7819fa4169638814543028d0c0f2",
-        "runtimeCodeHash": "0x41690a8f1d61c02dfa80d021f7fea384718d8203f379a9677de960db647e7d9b",
-        "deploymentBlock": 44804172,
+        "adapterAddress": "0xbd26951157abb0b0de5c570e80dd923d5a2352d4",
+        "runtimeCodeHash": "0xe28592cd329c5cc9c13b1104b324c7d5ffe591cadf125298ef933accd5914a76",
+        "deploymentBlock": 45168601,
         "assetId": "native:eth"
       },
       "erc20": {
-        "adapterAddress": "0x4b7603b6731b2fc10064e2bda099ce291398c826",
-        "runtimeCodeHash": "0x6ab5286c04e4fe1409256bcde79b4d370b37acb342c85d38c4720ea6202d1cb0",
-        "deploymentBlock": 44877926,
+        "adapterAddress": "0xee74f9b37688e501cf2fddf37c17c7ef9a6f1670",
+        "runtimeCodeHash": "0x3fcd7681e9514721b2de6355a1bc7985ca73da9a460cf9ad6e7a6ea9a6b07a48",
+        "deploymentBlock": 45168603,
         "asset": {
           "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
           "runtimeCodeHash": "0xedc5281a85c0efecd49999a1ef668390c59b88702f2d4a07029d7f5d63059d6c",
@@ -53,6 +110,32 @@
           "standard": "ERC20"
         }
       },
+      "erc20s": [
+        {
+          "adapterAddress": "0xee74f9b37688e501cf2fddf37c17c7ef9a6f1670",
+          "runtimeCodeHash": "0x3fcd7681e9514721b2de6355a1bc7985ca73da9a460cf9ad6e7a6ea9a6b07a48",
+          "deploymentBlock": 45168603,
+          "asset": {
+            "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+            "runtimeCodeHash": "0xedc5281a85c0efecd49999a1ef668390c59b88702f2d4a07029d7f5d63059d6c",
+            "symbol": "USDC",
+            "decimals": 6,
+            "standard": "ERC20"
+          }
+        },
+        {
+          "adapterAddress": "0x5c1e3ca73084370f6ef394051a504cf466e52c86",
+          "runtimeCodeHash": "0x638d22fb6b40013a19c481ce859fdf96af7d5fa7d094c781837bebc9ffc25189",
+          "deploymentBlock": 45168666,
+          "asset": {
+            "address": "0x808456652fdb597867f38412077a9182bf77359f",
+            "runtimeCodeHash": "0xdc7d03167b2b33566fa1cf50046e5bf4828f6d401678ed832d2cd7973ea17380",
+            "symbol": "EURC",
+            "decimals": 6,
+            "standard": "ERC20"
+          }
+        }
+      ],
       "confirmationPolicy": {
         "requiredConfirmations": 2,
         "reorgSafetyBlocks": 12
@@ -63,135 +146,6 @@
         "minimumCrossChainDeltaSeconds": 3600,
         "minimumDestinationRelayWindowSeconds": 3600
       }
-    },
-    {
-      "chainId": "421614",
-      "native": {
-        "adapterAddress": "0x9ff9e978801b7819fa4169638814543028d0c0f2",
-        "runtimeCodeHash": "0x4a2d48e907b541f3934e2a57368b0a82abc1af6420170d00c592bcbee19b3453",
-        "deploymentBlock": 292768615,
-        "assetId": "native:eth"
-      },
-      "erc20": {
-        "adapterAddress": "0x77484fc7203f25b92e95327116b4d5ca92c8b019",
-        "runtimeCodeHash": "0xd1d39b642470aeb2cbdcc4246247db50c55fa73f3aa1d33ced90a70cc1bc8aa3",
-        "deploymentBlock": 293360293,
-        "asset": {
-          "address": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
-          "runtimeCodeHash": "0x9a736af6aac290d9196883e8686fc1d127ff657ca534fe4b88d6d40dc0bc6750",
-          "symbol": "USDC",
-          "decimals": 6,
-          "standard": "ERC20"
-        }
-      },
-      "confirmationPolicy": {
-        "requiredConfirmations": 2,
-        "reorgSafetyBlocks": 20
-      },
-      "timeoutPolicy": {
-        "minimumSeconds": 60,
-        "maximumSeconds": 604800,
-        "minimumCrossChainDeltaSeconds": 3600,
-        "minimumDestinationRelayWindowSeconds": 3600
-      }
     }
-  ],
-  "evidence": {
-    "84532": {
-      "deployer": "0xc69f8ec01a8e86ed071b410683ba005c8a925cf8",
-      "erc20": {
-        "transactionHash": "0x076cd6dedc7cd36004de3ce1934a9e06b5a2d275393e7973323ee6d158619dbe",
-        "gasUsed": "1164385",
-        "constructorArguments": {
-          "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
-          "expectedDecimals": 6,
-          "minimumLockDuration": 60,
-          "maximumLockDuration": 604800
-        },
-        "explorerUrl": "https://sepolia.basescan.org/address/0x4b7603b6731b2fc10064e2bda099ce291398c826#code",
-        "verification": {
-          "status": "verified",
-          "sourceVerified": true,
-          "verifiedAt": "2026-07-31T18:56:58.000Z"
-        }
-      },
-      "exactFactory": {
-        "transactionHash": "0xcdcb1f664a32b01d2a9342e603ae5b2e9249da03461253732ce7a3de24e7fed5",
-        "gasUsed": "1862214",
-        "constructorArguments": {
-          "asset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
-          "htlc": "0x4b7603b6731b2fc10064e2bda099ce291398c826"
-        },
-        "explorerUrl": "https://sepolia.basescan.org/address/0x8068abc9b18ca40247a6545e1567d0a867714f94#code",
-        "verification": {
-          "status": "verified",
-          "sourceVerified": true,
-          "verifiedAt": "2026-07-31T18:56:58.000Z"
-        }
-      },
-      "preflight": {
-        "chainId": "84532",
-        "token": {
-          "address": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
-          "runtimeCodeHash": "0xedc5281a85c0efecd49999a1ef668390c59b88702f2d4a07029d7f5d63059d6c",
-          "symbol": "USDC",
-          "name": "USDC",
-          "version": "2",
-          "decimals": 6,
-          "domainSeparator": "0x71f17a3b2ff373b803d70a5a07c046c1a2bc8e89c09ef722fcb047abe94c9818"
-        },
-        "erc20AdapterVersion": 3,
-        "factoryAsset": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
-        "factoryHtlc": "0x4b7603b6731b2fc10064e2bda099ce291398c826"
-      }
-    },
-    "421614": {
-      "deployer": "0xc69f8ec01a8e86ed071b410683ba005c8a925cf8",
-      "erc20": {
-        "transactionHash": "0x85db414538ae6c13d268dc18473e0592ac8425c4f98794b310f095ca286cf944",
-        "gasUsed": "1917551",
-        "constructorArguments": {
-          "asset": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
-          "expectedDecimals": 6,
-          "minimumLockDuration": 60,
-          "maximumLockDuration": 604800
-        },
-        "explorerUrl": "https://sepolia.arbiscan.io/address/0x77484fc7203f25b92e95327116b4d5ca92c8b019#code",
-        "verification": {
-          "status": "verified",
-          "sourceVerified": true,
-          "verifiedAt": "2026-07-31T18:57:06.298Z"
-        }
-      },
-      "exactFactory": {
-        "transactionHash": "0x2f25032668b03222f5e58f7fa0e57f1d8d9b021ef9ab417f1f8b2e71af3fcee9",
-        "gasUsed": "2858694",
-        "constructorArguments": {
-          "asset": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
-          "htlc": "0x77484fc7203f25b92e95327116b4d5ca92c8b019"
-        },
-        "explorerUrl": "https://sepolia.arbiscan.io/address/0xef6461bea59087d090b306e359f7303d68315f24#code",
-        "verification": {
-          "status": "verified",
-          "sourceVerified": true,
-          "verifiedAt": "2026-07-31T18:57:06.298Z"
-        }
-      },
-      "preflight": {
-        "chainId": "421614",
-        "token": {
-          "address": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
-          "runtimeCodeHash": "0x9a736af6aac290d9196883e8686fc1d127ff657ca534fe4b88d6d40dc0bc6750",
-          "symbol": "USDC",
-          "name": "USD Coin",
-          "version": "2",
-          "decimals": 6,
-          "domainSeparator": "0x85944e1292d007732838d6eadfa67589b78ffcededbd4df60488d0af251308bb"
-        },
-        "erc20AdapterVersion": 3,
-        "factoryAsset": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
-        "factoryHtlc": "0x77484fc7203f25b92e95327116b4d5ca92c8b019"
-      }
-    }
-  }
+  ]
 }

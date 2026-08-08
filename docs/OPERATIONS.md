@@ -14,7 +14,7 @@ Monitor process restarts, connected peers, LightPush/Filter/Store availability, 
 
 When FX is enabled, also monitor loopback broker health, Waku readiness,
 active RFQs, per-code rejections, journal write failures, Base Sepolia and
-Arbitrum Sepolia RPC freshness, HTTP 429 volume, and request latency. Do not
+Avalanche Fuji RPC freshness, HTTP 429 volume, and request latency. Do not
 log private keys, raw secrets, signed funding transactions, wallet archives,
 or full requester addresses. Broker unavailability must not restart nwaku or
 the Versus node.

@@ -2,15 +2,15 @@
   "schema": "versus-fx-broker-runtime-provenance",
   "schemaVersion": 1,
   "sourceRepository": "https://github.com/digital-shephard/versus-cypher.git",
-  "sourceCommit": "63bf5473266fc8ed999ca402acb80a382083f6b1",
+  "sourceCommit": "e25bbd070c633f2f86fb0716e95df22942095535",
   "package": "@versus/network@0.1.0",
   "tarball": "vendor/versus-network-0.1.0.tgz",
-  "tarballBytes": 160227,
-  "tarballSha256": "904eef1b1e9a2fa233fc37588f066e8e7fa8c4bfb6fc7a8e2f1bd6b1382ef02b",
+  "tarballBytes": 165893,
+  "tarballSha256": "763867f6c55e89621e8b2d381573649e61cc0d19dcd8fc4e710e4ce7f55669a4",
   "manifest": "../config/fx-v3-public-testnet.json",
-  "manifestSha256": "9c624dbcbc9c93ccfefb7ce08d67abc23203590af0a66473566c7df68c632b51",
+  "manifestSha256": "d17a9d14da532c86c87efde7d6506154fad669026e626b33a85adee4b0165521",
   "exactFactories": "../config/fx-x402-exact-factories.json",
-  "exactFactoriesSha256": "5b0e56865ae15a0f68d76b46cfaabc4b627be4e7acf4b8399778650e2da6b884",
-  "deploymentId": "0x5f6e0d22253c91a77b25e50add622e1e172c8a7f30a4b1cbfb652e8d680dbf45",
-  "coordinationDomain": "0x6e5a6b5ed65eac32898129a87fbcb68b870469b348c52645fe2170f03e04df9a"
+  "exactFactoriesSha256": "e47df6d085c384edfde763d5fdbc7ed4b744458576e279dc0eb343cb33c6d5c6",
+  "deploymentId": "0x8cd9ede68d18e52213372ed6041bdb83867c5846119461c860d95f74e689ed54",
+  "coordinationDomain": "0x50aea8e208dd1de883d5f8b50eefe71f328b6b9aea996388d402f87ef4415ed9"
 }

@@ -77,7 +77,7 @@ export function validateEnv(env, { allowPlaceholders = false } = {}) {
     }
     for (const name of [
       "VERSUS_FX_BASE_SEPOLIA_RPC_URL",
-      "VERSUS_FX_ARBITRUM_SEPOLIA_RPC_URL",
+      "VERSUS_FX_AVALANCHE_FUJI_RPC_URL",
     ]) {
       if (!/^https:\/\//.test(env[name] || "")) {
         throw new Error(`${name} must use HTTPS when FX is enabled`);

@@ -9,9 +9,9 @@ const read = (...parts) => fs.readFileSync(path.join(ROOT, ...parts), "utf8");
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 
 const DEPLOYMENT_ID =
-  "0x5f6e0d22253c91a77b25e50add622e1e172c8a7f30a4b1cbfb652e8d680dbf45";
+  "0x8cd9ede68d18e52213372ed6041bdb83867c5846119461c860d95f74e689ed54";
 const COORDINATION_DOMAIN =
-  "0x6e5a6b5ed65eac32898129a87fbcb68b870469b348c52645fe2170f03e04df9a";
+  "0x50aea8e208dd1de883d5f8b50eefe71f328b6b9aea996388d402f87ef4415ed9";
 
 test("frozen public-testnet manifest and broker package match their provenance", () => {
   const manifestText = read("config", "fx-v3-public-testnet.json");
@@ -28,7 +28,11 @@ test("frozen public-testnet manifest and broker package match their provenance",
   assert.equal(manifest.coordinationDomain, COORDINATION_DOMAIN);
   assert.deepEqual(
     manifest.capabilities.map((chain) => String(chain.chainId)).sort(),
-    ["421614", "84532"]
+    ["43113", "84532"]
+  );
+  assert.deepEqual(
+    exactFactories.factories.map((factory) => `${factory.chainId}:${factory.tokenName}`).sort(),
+    ["43113:EUR Coin", "43113:USD Coin", "84532:EURC", "84532:USDC"]
   );
   assert.equal(provenance.deploymentId, DEPLOYMENT_ID);
   assert.equal(provenance.coordinationDomain, COORDINATION_DOMAIN);
@@ -94,7 +98,7 @@ test("FX production configuration fails closed unless every boundary is explicit
     VERSUS_FX_ENABLED: "true",
     VERSUS_FX_DEPLOYMENT_ID: DEPLOYMENT_ID,
     VERSUS_FX_BASE_SEPOLIA_RPC_URL: "https://base-sepolia.example.invalid",
-    VERSUS_FX_ARBITRUM_SEPOLIA_RPC_URL: "https://arb-sepolia.example.invalid",
+    VERSUS_FX_AVALANCHE_FUJI_RPC_URL: "https://fuji.example.invalid",
     VERSUS_FX_BROKER_KEY_PATH: "/var/lib/versus-fx-secrets/broker-key",
     VERSUS_FX_EXACT_SETTLER_KEY_PATH:
       "/var/lib/versus-fx-secrets/exact-settler-key",
@@ -134,7 +138,7 @@ test("AWS rollout reads scoped SSM secrets without placing the broker key in env
   assert.match(moduleMain, /var\.fx_broker_key_parameter_name/);
   assert.match(moduleMain, /var\.fx_exact_settler_key_parameter_name/);
   assert.match(moduleMain, /var\.fx_base_sepolia_rpc_parameter_name/);
-  assert.match(moduleMain, /var\.fx_arbitrum_sepolia_rpc_parameter_name/);
+  assert.match(moduleMain, /var\.fx_avalanche_fuji_rpc_parameter_name/);
   assert.match(userData, /aws ssm get-parameter[\s\S]*--with-decryption/);
   assert.match(userData, /\/var\/lib\/versus-fx-secrets\/broker-key/);
   assert.match(userData, /\/var\/lib\/versus-fx-secrets\/exact-settler-key/);

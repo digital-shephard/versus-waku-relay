@@ -18,7 +18,7 @@ public requester -- HTTPS /v1/fx/swaps or /v1/fx/exact --> FX broker
                                                 |
                                     signed RFQ / dealer quotes over Waku
                                                 |
-                              frozen Base + Arbitrum Sepolia V3 observations
+                              frozen Base Sepolia + Avalanche Fuji V3 observations
 ```
 
 Each public host is an identical failure domain with a unique Secp256k1 node key and persistent SQLite Store. Caddy terminates TLS and forwards WebSocket upgrades to nwaku. REST and metrics bind only to host loopback. The two nodes connect through explicit static TCP multiaddresses and advertise stable domain-based WSS multiaddresses to light clients.

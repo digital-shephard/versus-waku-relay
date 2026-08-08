@@ -48,17 +48,17 @@ fi
 fx_broker_key=""
 fx_exact_settler_key=""
 fx_base_sepolia_rpc_url="https://disabled.invalid"
-fx_arbitrum_sepolia_rpc_url="https://disabled.invalid"
+fx_avalanche_fuji_rpc_url="https://disabled.invalid"
 if [[ "${fx_broker_enabled}" == "true" ]]; then
   fx_broker_key=$(aws ssm get-parameter --region "${region}" --name "${fx_broker_key_parameter_name}" --with-decryption --query Parameter.Value --output text)
   fx_exact_settler_key=$(aws ssm get-parameter --region "${region}" --name "${fx_exact_settler_key_parameter_name}" --with-decryption --query Parameter.Value --output text)
   fx_base_sepolia_rpc_url=$(aws ssm get-parameter --region "${region}" --name "${fx_base_sepolia_rpc_parameter_name}" --with-decryption --query Parameter.Value --output text)
-  fx_arbitrum_sepolia_rpc_url=$(aws ssm get-parameter --region "${region}" --name "${fx_arbitrum_sepolia_rpc_parameter_name}" --with-decryption --query Parameter.Value --output text)
+  fx_avalanche_fuji_rpc_url=$(aws ssm get-parameter --region "${region}" --name "${fx_avalanche_fuji_rpc_parameter_name}" --with-decryption --query Parameter.Value --output text)
   if (
     [[ ! "$fx_broker_key" =~ ^0x[0-9a-fA-F]{64}$ ]] ||
     [[ ! "$fx_exact_settler_key" =~ ^0x[0-9a-fA-F]{64}$ ]] ||
     [[ ! "$fx_base_sepolia_rpc_url" =~ ^https:// ]] ||
-    [[ ! "$fx_arbitrum_sepolia_rpc_url" =~ ^https:// ]]
+    [[ ! "$fx_avalanche_fuji_rpc_url" =~ ^https:// ]]
   ); then
     echo "Versus FX broker key or testnet RPC URL is invalid" >&2
     exit 1
@@ -130,7 +130,7 @@ VERSUS_FX_HTTP_MAX_CONCURRENT_ROUTES=16
 VERSUS_FX_HTTP_REQUESTS_PER_MINUTE_PER_IP=${fx_x402_requests_per_minute_per_ip}
 VERSUS_FX_HTTP_MAX_CONCURRENT_REQUESTS=${fx_max_concurrent_x402_requests}
 VERSUS_FX_BASE_SEPOLIA_RPC_URL=$fx_base_sepolia_rpc_url
-VERSUS_FX_ARBITRUM_SEPOLIA_RPC_URL=$fx_arbitrum_sepolia_rpc_url
+VERSUS_FX_AVALANCHE_FUJI_RPC_URL=$fx_avalanche_fuji_rpc_url
 VERSUS_FX_BROKER_DATA_DIR=/var/lib/versus-fx-broker
 VERSUS_FX_BROKER_KEY_PATH=/var/lib/versus-fx-secrets/broker-key
 VERSUS_FX_EXACT_SETTLER_KEY_PATH=/var/lib/versus-fx-secrets/exact-settler-key

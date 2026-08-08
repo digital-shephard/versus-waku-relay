@@ -55,7 +55,7 @@ observations, and independent chain confirmation.
 The `fx-testnet` profile packages the reference broker as a separate,
 least-privileged container and exposes `/v1/fx/swaps*` through the existing
 relay TLS domains. The current deployment is fixed to requester-secret V3 on
-Base Sepolia and Arbitrum Sepolia. It charges no broker fee.
+Base Sepolia and Avalanche Fuji. It charges no broker fee.
 
 The sidecar has its own SSM-managed non-funded identity, read-only testnet
 RPCs, journal, resource limits, health endpoint, and rollback path. It does

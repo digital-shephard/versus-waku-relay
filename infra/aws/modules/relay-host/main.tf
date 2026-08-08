@@ -18,7 +18,7 @@ locals {
     var.fx_broker_enabled ? var.fx_broker_key_parameter_name : null,
     var.fx_broker_enabled ? var.fx_exact_settler_key_parameter_name : null,
     var.fx_broker_enabled ? var.fx_base_sepolia_rpc_parameter_name : null,
-    var.fx_broker_enabled ? var.fx_arbitrum_sepolia_rpc_parameter_name : null,
+    var.fx_broker_enabled ? var.fx_avalanche_fuji_rpc_parameter_name : null,
     var.graduation_keeper_enabled ? var.graduation_keeper_key_parameter_name : null,
   ])
   parameter_arns = [
@@ -201,7 +201,7 @@ resource "aws_instance" "relay" {
     fx_broker_key_parameter_name           = var.fx_broker_key_parameter_name != null ? var.fx_broker_key_parameter_name : ""
     fx_exact_settler_key_parameter_name    = var.fx_exact_settler_key_parameter_name != null ? var.fx_exact_settler_key_parameter_name : ""
     fx_base_sepolia_rpc_parameter_name     = var.fx_base_sepolia_rpc_parameter_name != null ? var.fx_base_sepolia_rpc_parameter_name : ""
-    fx_arbitrum_sepolia_rpc_parameter_name = var.fx_arbitrum_sepolia_rpc_parameter_name != null ? var.fx_arbitrum_sepolia_rpc_parameter_name : ""
+    fx_avalanche_fuji_rpc_parameter_name = var.fx_avalanche_fuji_rpc_parameter_name != null ? var.fx_avalanche_fuji_rpc_parameter_name : ""
     fx_deployment_id                       = var.fx_deployment_id
     fx_waku_peers                          = var.fx_waku_peers
     fx_observation_window_ms               = var.fx_observation_window_ms

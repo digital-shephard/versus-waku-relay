@@ -27,7 +27,7 @@ module "relay_a" {
   fx_broker_key_parameter_name           = try(var.relay_a.fx_broker_key_parameter_name, null)
   fx_exact_settler_key_parameter_name    = try(var.relay_a.fx_exact_settler_key_parameter_name, null)
   fx_base_sepolia_rpc_parameter_name     = try(var.relay_a.fx_base_sepolia_rpc_parameter_name, null)
-  fx_arbitrum_sepolia_rpc_parameter_name = try(var.relay_a.fx_arbitrum_sepolia_rpc_parameter_name, null)
+  fx_avalanche_fuji_rpc_parameter_name = try(var.relay_a.fx_avalanche_fuji_rpc_parameter_name, null)
   fx_deployment_id                       = var.fx.deployment_id
   fx_waku_peers                          = var.fx.waku_peers
   fx_observation_window_ms               = var.fx.observation_window_ms
@@ -78,7 +78,7 @@ module "relay_b" {
   fx_broker_key_parameter_name           = try(var.relay_b.fx_broker_key_parameter_name, null)
   fx_exact_settler_key_parameter_name    = try(var.relay_b.fx_exact_settler_key_parameter_name, null)
   fx_base_sepolia_rpc_parameter_name     = try(var.relay_b.fx_base_sepolia_rpc_parameter_name, null)
-  fx_arbitrum_sepolia_rpc_parameter_name = try(var.relay_b.fx_arbitrum_sepolia_rpc_parameter_name, null)
+  fx_avalanche_fuji_rpc_parameter_name = try(var.relay_b.fx_avalanche_fuji_rpc_parameter_name, null)
   fx_deployment_id                       = var.fx.deployment_id
   fx_waku_peers                          = var.fx.waku_peers
   fx_observation_window_ms               = var.fx.observation_window_ms

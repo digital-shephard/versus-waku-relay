@@ -10,12 +10,12 @@ region="${AWS_REGION:?set AWS_REGION}"
 broker_parameter="${FX_BROKER_KEY_PARAMETER_NAME:?set FX_BROKER_KEY_PARAMETER_NAME}"
 settler_parameter="${FX_EXACT_SETTLER_KEY_PARAMETER_NAME:?set FX_EXACT_SETTLER_KEY_PARAMETER_NAME}"
 base_parameter="${FX_BASE_SEPOLIA_RPC_PARAMETER_NAME:?set FX_BASE_SEPOLIA_RPC_PARAMETER_NAME}"
-arbitrum_parameter="${FX_ARBITRUM_SEPOLIA_RPC_PARAMETER_NAME:?set FX_ARBITRUM_SEPOLIA_RPC_PARAMETER_NAME}"
+fuji_parameter="${FX_AVALANCHE_FUJI_RPC_PARAMETER_NAME:?set FX_AVALANCHE_FUJI_RPC_PARAMETER_NAME}"
 root="/opt/versus-waku-relay"
 env_file="$root/.env"
 compose_file="$root/deploy/docker-compose.yml"
 data_directory="/var/lib/versus-fx-broker"
-target_deployment="0x5f6e0d22253c91a77b25e50add622e1e172c8a7f30a4b1cbfb652e8d680dbf45"
+target_deployment="0x8cd9ede68d18e52213372ed6041bdb83867c5846119461c860d95f74e689ed54"
 deployment_marker="$data_directory/.deployment-id"
 
 if [[ ! -f "$env_file" || ! -f "$compose_file" ]]; then
@@ -41,9 +41,9 @@ base_rpc_url=$(aws ssm get-parameter \
   --with-decryption \
   --query Parameter.Value \
   --output text)
-arbitrum_rpc_url=$(aws ssm get-parameter \
+fuji_rpc_url=$(aws ssm get-parameter \
   --region "$region" \
-  --name "$arbitrum_parameter" \
+  --name "$fuji_parameter" \
   --with-decryption \
   --query Parameter.Value \
   --output text)
@@ -51,7 +51,7 @@ arbitrum_rpc_url=$(aws ssm get-parameter \
 if [[ ! "$broker_key" =~ ^0x[0-9a-fA-F]{64}$ ]] ||
    [[ ! "$settler_key" =~ ^0x[0-9a-fA-F]{64}$ ]] ||
    [[ ! "$base_rpc_url" =~ ^https:// ]] ||
-   [[ ! "$arbitrum_rpc_url" =~ ^https:// ]]; then
+   [[ ! "$fuji_rpc_url" =~ ^https:// ]]; then
   echo "FX broker key or testnet RPC URL is invalid." >&2
   exit 1
 fi
@@ -117,7 +117,7 @@ install -o 1000 -g 1000 -m 0600 /dev/null "$deployment_marker"
 printf '%s\n' "$target_deployment" > "$deployment_marker"
 
 temporary=$(mktemp "$root/.env.fx.XXXXXX")
-trap 'rm -f "$temporary"; unset broker_key settler_key rain_key keeper_key base_rpc_url arbitrum_rpc_url' EXIT
+trap 'rm -f "$temporary"; unset broker_key settler_key rain_key keeper_key base_rpc_url fuji_rpc_url' EXIT
 grep -vE '^VERSUS_FX_' "$env_file" > "$temporary"
 cat >> "$temporary" <<EOF
 VERSUS_FX_ENABLED=true
@@ -131,7 +131,7 @@ VERSUS_FX_HTTP_MAX_CONCURRENT_ROUTES=16
 VERSUS_FX_HTTP_REQUESTS_PER_MINUTE_PER_IP=120
 VERSUS_FX_HTTP_MAX_CONCURRENT_REQUESTS=16
 VERSUS_FX_BASE_SEPOLIA_RPC_URL=$base_rpc_url
-VERSUS_FX_ARBITRUM_SEPOLIA_RPC_URL=$arbitrum_rpc_url
+VERSUS_FX_AVALANCHE_FUJI_RPC_URL=$fuji_rpc_url
 VERSUS_FX_BROKER_DATA_DIR=/var/lib/versus-fx-broker
 VERSUS_FX_BROKER_KEY_PATH=/var/lib/versus-fx-secrets/broker-key
 VERSUS_FX_EXACT_SETTLER_KEY_PATH=/var/lib/versus-fx-secrets/exact-settler-key

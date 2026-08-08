@@ -39,7 +39,7 @@ settlement address on another managed chain:
 ```sh
 npm run wallet:sweep -- \
   --from 84532 \
-  --to 421614 \
+  --to 43113 \
   --output 10.00 \
   --max-input 10.02
 ```

@@ -37,7 +37,7 @@ For each host create four region-local `SecureString` parameters:
 /versus/production/relay-a/fx-broker-key
 /versus/production/relay-a/fx-exact-settler-key
 /versus/production/relay-a/fx-base-sepolia-rpc-url
-/versus/production/relay-a/fx-arbitrum-sepolia-rpc-url
+/versus/production/relay-a/fx-avalanche-fuji-rpc-url
 ```
 
 Use the corresponding `relay-b` names in its region. Broker keys must be
@@ -55,7 +55,7 @@ sudo AWS_REGION=<region> \
   FX_BROKER_KEY_PARAMETER_NAME=<broker-key-parameter> \
   FX_EXACT_SETTLER_KEY_PARAMETER_NAME=<settler-key-parameter> \
   FX_BASE_SEPOLIA_RPC_PARAMETER_NAME=<base-rpc-parameter> \
-  FX_ARBITRUM_SEPOLIA_RPC_PARAMETER_NAME=<arbitrum-rpc-parameter> \
+  FX_AVALANCHE_FUJI_RPC_PARAMETER_NAME=<fuji-rpc-parameter> \
   /opt/versus-waku-relay/deploy/enable-fx-testnet.sh
 ```
 
@@ -93,10 +93,11 @@ This probe is intentionally read-only. It never publishes an RFQ or moves
 testnet funds. Economic acceptance remains a separate explicit requester and
 dealer test after both sidecars pass the infrastructure gate.
 
-Then complete one tiny Base Sepolia to Arbitrum Sepolia request through each
-host using an independently running dealer. Verify the requester funds its
-own source HTLC, the arbitrary destination recipient needs no gas, the broker
-fee is zero, and all lock/claim receipts match the frozen V3 manifest.
+Then complete tiny Base Sepolia/Avalanche Fuji requests through each host with
+USDC and EURC using an independently running dealer. Verify the requester
+funds its own source HTLC, the arbitrary destination recipient needs no gas,
+the broker fee is zero, and all lock/claim receipts match the frozen V3
+manifest.
 
 Rollback stops only the sidecar and preserves recovery data:
 

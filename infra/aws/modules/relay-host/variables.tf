@@ -63,7 +63,7 @@ variable "fx_base_sepolia_rpc_parameter_name" {
   default = null
 }
 
-variable "fx_arbitrum_sepolia_rpc_parameter_name" {
+variable "fx_avalanche_fuji_rpc_parameter_name" {
   type    = string
   default = null
 }
