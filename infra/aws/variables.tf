@@ -39,23 +39,23 @@ variable "repository_ref" {
 variable "relay_a" {
   description = "Region-specific configuration for relay A."
   type = object({
-    region                                 = string
-    availability_zone                      = optional(string)
-    domain                                 = string
-    vpc_cidr                               = string
-    subnet_cidr                            = string
-    instance_type                          = optional(string, "t3.small")
-    root_volume_gib                        = optional(number, 30)
-    node_key_parameter_name                = string
-    rain_attestor_key_parameter_name       = string
-    base_rpc_url_parameter_name            = string
-    fx_broker_key_parameter_name           = optional(string)
-    fx_exact_settler_key_parameter_name    = optional(string)
-    fx_base_sepolia_rpc_parameter_name     = optional(string)
+    region                               = string
+    availability_zone                    = optional(string)
+    domain                               = string
+    vpc_cidr                             = string
+    subnet_cidr                          = string
+    instance_type                        = optional(string, "t3.small")
+    root_volume_gib                      = optional(number, 30)
+    node_key_parameter_name              = string
+    rain_attestor_key_parameter_name     = string
+    base_rpc_url_parameter_name          = string
+    fx_broker_key_parameter_name         = optional(string)
+    fx_exact_settler_key_parameter_name  = optional(string)
+    fx_base_sepolia_rpc_parameter_name   = optional(string)
     fx_avalanche_fuji_rpc_parameter_name = optional(string)
-    graduation_keeper_enabled              = optional(bool, false)
-    graduation_keeper_key_parameter_name   = optional(string)
-    static_peer                            = string
+    graduation_keeper_enabled            = optional(bool, false)
+    graduation_keeper_key_parameter_name = optional(string)
+    static_peer                          = string
   })
   validation {
     condition = !var.relay_a.graduation_keeper_enabled || try(
@@ -78,23 +78,23 @@ variable "relay_a" {
 variable "relay_b" {
   description = "Region-specific configuration for relay B."
   type = object({
-    region                                 = string
-    availability_zone                      = optional(string)
-    domain                                 = string
-    vpc_cidr                               = string
-    subnet_cidr                            = string
-    instance_type                          = optional(string, "t3.small")
-    root_volume_gib                        = optional(number, 30)
-    node_key_parameter_name                = string
-    rain_attestor_key_parameter_name       = string
-    base_rpc_url_parameter_name            = string
-    fx_broker_key_parameter_name           = optional(string)
-    fx_exact_settler_key_parameter_name    = optional(string)
-    fx_base_sepolia_rpc_parameter_name     = optional(string)
+    region                               = string
+    availability_zone                    = optional(string)
+    domain                               = string
+    vpc_cidr                             = string
+    subnet_cidr                          = string
+    instance_type                        = optional(string, "t3.small")
+    root_volume_gib                      = optional(number, 30)
+    node_key_parameter_name              = string
+    rain_attestor_key_parameter_name     = string
+    base_rpc_url_parameter_name          = string
+    fx_broker_key_parameter_name         = optional(string)
+    fx_exact_settler_key_parameter_name  = optional(string)
+    fx_base_sepolia_rpc_parameter_name   = optional(string)
     fx_avalanche_fuji_rpc_parameter_name = optional(string)
-    graduation_keeper_enabled              = optional(bool, false)
-    graduation_keeper_key_parameter_name   = optional(string)
-    static_peer                            = string
+    graduation_keeper_enabled            = optional(bool, false)
+    graduation_keeper_key_parameter_name = optional(string)
+    static_peer                          = string
   })
   validation {
     condition = !var.relay_b.graduation_keeper_enabled || try(
@@ -119,7 +119,7 @@ variable "fx" {
   type = object({
     enabled                         = optional(bool, false)
     deployment_id                   = optional(string, "0x8cd9ede68d18e52213372ed6041bdb83867c5846119461c860d95f74e689ed54")
-    waku_peers                      = optional(string, "/dns4/relay-a.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAmCQArrt8ND7sTzPCg76YmQPab7HKjSrVZeyeTVZdQyPWy,/dns4/relay-b.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAkx96y18XpzAybpmi1zzdMQZFvsRPZfkku8R9T4KJFMr2P")
+    waku_peers                      = optional(string, "/dns/relay-a.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAmCQArrt8ND7sTzPCg76YmQPab7HKjSrVZeyeTVZdQyPWy,/dns/relay-b.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAkx96y18XpzAybpmi1zzdMQZFvsRPZfkku8R9T4KJFMr2P")
     observation_window_ms           = optional(number, 20000)
     max_active_rfqs                 = optional(number, 32)
     x402_requests_per_minute_per_ip = optional(number, 120)

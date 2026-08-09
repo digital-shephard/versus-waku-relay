@@ -23,7 +23,7 @@ try {
   }
   if (!info) throw new Error("temporary identity node did not become healthy");
   const peerId = peerIdFromInfo(info);
-  console.log(JSON.stringify({ peerId, publicWssMultiaddr: publicWssMultiaddr(env, peerId), publicTcpMultiaddr: `/dns4/${env.PUBLIC_DOMAIN}/tcp/60000/p2p/${peerId}` }, null, 2));
+  console.log(JSON.stringify({ peerId, publicWssMultiaddr: publicWssMultiaddr(env, peerId), publicTcpMultiaddr: `/dns/${env.PUBLIC_DOMAIN}/tcp/60000/p2p/${peerId}` }, null, 2));
 } finally {
   docker(["rm", "--force", name], { quiet: true, allowFailure: true });
 }

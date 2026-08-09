@@ -210,5 +210,5 @@ export function peerIdFromInfo(info) {
 }
 
 export function publicWssMultiaddr(env, peerId) {
-  return `/dns4/${env.PUBLIC_DOMAIN}/tcp/443/wss/p2p/${peerId}`;
+  return `/dns/${env.PUBLIC_DOMAIN}/tcp/443/wss/p2p/${peerId}`;
 }

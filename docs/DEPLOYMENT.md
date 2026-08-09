@@ -6,7 +6,8 @@
 - At least 2 GB RAM for a WSS service node.
 - Persistent disk for Waku Store, the Versus-node block cursor, and Caddy state.
 - Public TCP 80, 443, and 60000.
-- DNS A/AAAA record pointing the relay domain at the host.
+- DNS A and AAAA records pointing the relay domain at the dual-stack host.
+- A public IPv6 subnet route through the internet gateway; IPv6-only clients must be able to reach WSS without carrier IPv4 translation.
 - Host firewall denying every other inbound port.
 
 ## Two-host ceremony

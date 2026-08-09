@@ -18,7 +18,7 @@ relay_a = {
   fx_avalanche_fuji_rpc_parameter_name = "/versus/production/relay-a/fx-avalanche-fuji-rpc-url"
   graduation_keeper_enabled = false
   # graduation_keeper_key_parameter_name = "/versus/production/relay-a/graduation-keeper-key"
-  static_peer             = "/dns4/relay-b.versuscypher.com/tcp/60000/p2p/RELAY_B_PEER_ID"
+  static_peer             = "/dns/relay-b.versuscypher.com/tcp/60000/p2p/RELAY_B_PEER_ID"
 }
 
 relay_b = {
@@ -37,7 +37,7 @@ relay_b = {
   fx_avalanche_fuji_rpc_parameter_name = "/versus/production/relay-b/fx-avalanche-fuji-rpc-url"
   graduation_keeper_enabled = false
   # graduation_keeper_key_parameter_name = "/versus/production/relay-b/graduation-keeper-key"
-  static_peer             = "/dns4/relay-a.versuscypher.com/tcp/60000/p2p/RELAY_A_PEER_ID"
+  static_peer             = "/dns/relay-a.versuscypher.com/tcp/60000/p2p/RELAY_A_PEER_ID"
 }
 
 fx = {

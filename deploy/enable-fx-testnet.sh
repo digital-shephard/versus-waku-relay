@@ -123,7 +123,7 @@ cat >> "$temporary" <<EOF
 VERSUS_FX_ENABLED=true
 VERSUS_FX_BROKER_IMAGE=versus-fx-broker:0.1.0
 VERSUS_FX_DEPLOYMENT_ID=$target_deployment
-VERSUS_FX_WAKU_PEERS=/dns4/relay-a.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAmCQArrt8ND7sTzPCg76YmQPab7HKjSrVZeyeTVZdQyPWy,/dns4/relay-b.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAkx96y18XpzAybpmi1zzdMQZFvsRPZfkku8R9T4KJFMr2P
+VERSUS_FX_WAKU_PEERS=/dns/relay-a.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAmCQArrt8ND7sTzPCg76YmQPab7HKjSrVZeyeTVZdQyPWy,/dns/relay-b.versuscypher.com/tcp/443/wss/p2p/16Uiu2HAkx96y18XpzAybpmi1zzdMQZFvsRPZfkku8R9T4KJFMr2P
 VERSUS_FX_OBSERVATION_WINDOW_MS=20000
 VERSUS_FX_MAX_ACTIVE_RFQS=32
 VERSUS_FX_HTTP_ROUTES_PER_MINUTE_PER_IP=12

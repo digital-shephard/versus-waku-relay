@@ -44,7 +44,7 @@ services:
       - --staticnode=${VERSUS_WAKU_STATIC_PEER:?set VERSUS_WAKU_STATIC_PEER}
       - --ip-colocation-limit=${VERSUS_WAKU_IP_COLOCATION_LIMIT:-20}
       - --nat=extip:${PUBLIC_IP:?set PUBLIC_IP}
-      - --ext-multiaddr=/dns4/${PUBLIC_DOMAIN:?set PUBLIC_DOMAIN}/tcp/443/wss
+      - --ext-multiaddr=/dns/${PUBLIC_DOMAIN:?set PUBLIC_DOMAIN}/tcp/443/wss
       - --websocket-support=true
       - --websocket-port=8000
       - --rest=true

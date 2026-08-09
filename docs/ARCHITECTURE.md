@@ -21,7 +21,7 @@ public requester -- HTTPS /v1/fx/swaps or /v1/fx/exact --> FX broker
                               frozen Base Sepolia + Avalanche Fuji V3 observations
 ```
 
-Each public host is an identical failure domain with a unique Secp256k1 node key and persistent SQLite Store. Caddy terminates TLS and forwards WebSocket upgrades to nwaku. REST and metrics bind only to host loopback. The two nodes connect through explicit static TCP multiaddresses and advertise stable domain-based WSS multiaddresses to light clients.
+Each public host is an identical failure domain with a unique Secp256k1 node key and persistent SQLite Store. Caddy terminates TLS and forwards WebSocket upgrades to nwaku. REST and metrics bind only to host loopback. The two nodes connect through explicit static TCP multiaddresses and advertise stable dual-stack `/dns/` WSS multiaddresses backed by A and AAAA records, so IPv4-only, IPv6-only, and dual-stack light clients can reach the same identities.
 
 The service uses Versus cluster `66` and initially serves all eight autoshards. Those values isolate the first Versus graph from public cluster 1 and match the current content-topic client, whose launch topics may map onto any shard. They are coordinated network boundaries, not per-host tuning controls. Future neighborhood or interest sharding may assign subsets only alongside an explicit client routing migration.
 

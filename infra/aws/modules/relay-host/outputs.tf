@@ -4,6 +4,7 @@ output "summary" {
   value = {
     domain         = var.domain
     public_ip      = aws_eip.relay.public_ip
+    public_ipv6    = one(aws_instance.relay.ipv6_addresses)
     instance_id    = aws_instance.relay.id
     region         = data.aws_region.current.region
     node_key_path  = var.node_key_parameter_name

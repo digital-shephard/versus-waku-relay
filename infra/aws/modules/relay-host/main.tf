@@ -28,10 +28,11 @@ locals {
 }
 
 resource "aws_vpc" "this" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-  tags                 = { Name = var.name }
+  cidr_block                       = var.vpc_cidr
+  assign_generated_ipv6_cidr_block = true
+  enable_dns_support               = true
+  enable_dns_hostnames             = true
+  tags                             = { Name = var.name }
 }
 
 resource "aws_internet_gateway" "this" {
@@ -40,11 +41,13 @@ resource "aws_internet_gateway" "this" {
 }
 
 resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.this.id
-  cidr_block              = var.subnet_cidr
-  availability_zone       = var.availability_zone
-  map_public_ip_on_launch = true
-  tags                    = { Name = "${var.name}-public" }
+  vpc_id                          = aws_vpc.this.id
+  cidr_block                      = var.subnet_cidr
+  ipv6_cidr_block                 = cidrsubnet(aws_vpc.this.ipv6_cidr_block, 8, 0)
+  availability_zone               = var.availability_zone
+  map_public_ip_on_launch         = true
+  assign_ipv6_address_on_creation = true
+  tags                            = { Name = "${var.name}-public" }
 }
 
 resource "aws_route_table" "public" {
@@ -52,6 +55,10 @@ resource "aws_route_table" "public" {
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.this.id
+  }
+  route {
+    ipv6_cidr_block = "::/0"
+    gateway_id      = aws_internet_gateway.this.id
   }
   tags = { Name = "${var.name}-public" }
 }
@@ -176,6 +183,7 @@ resource "aws_instance" "relay" {
   vpc_security_group_ids      = [aws_security_group.relay.id]
   iam_instance_profile        = aws_iam_instance_profile.relay.name
   associate_public_ip_address = true
+  ipv6_address_count          = 1
   user_data_replace_on_change = false
 
   metadata_options {
@@ -191,44 +199,44 @@ resource "aws_instance" "relay" {
   }
 
   user_data = templatefile("${path.module}/user-data.sh.tftpl", {
-    region                                 = data.aws_region.current.region
-    public_ip                              = aws_eip.relay.public_ip
-    domain                                 = var.domain
-    node_key_parameter_name                = var.node_key_parameter_name
-    rain_attestor_key_parameter_name       = var.rain_attestor_key_parameter_name
-    base_rpc_url_parameter_name            = var.base_rpc_url_parameter_name
-    fx_broker_enabled                      = var.fx_broker_enabled
-    fx_broker_key_parameter_name           = var.fx_broker_key_parameter_name != null ? var.fx_broker_key_parameter_name : ""
-    fx_exact_settler_key_parameter_name    = var.fx_exact_settler_key_parameter_name != null ? var.fx_exact_settler_key_parameter_name : ""
-    fx_base_sepolia_rpc_parameter_name     = var.fx_base_sepolia_rpc_parameter_name != null ? var.fx_base_sepolia_rpc_parameter_name : ""
+    region                               = data.aws_region.current.region
+    public_ip                            = aws_eip.relay.public_ip
+    domain                               = var.domain
+    node_key_parameter_name              = var.node_key_parameter_name
+    rain_attestor_key_parameter_name     = var.rain_attestor_key_parameter_name
+    base_rpc_url_parameter_name          = var.base_rpc_url_parameter_name
+    fx_broker_enabled                    = var.fx_broker_enabled
+    fx_broker_key_parameter_name         = var.fx_broker_key_parameter_name != null ? var.fx_broker_key_parameter_name : ""
+    fx_exact_settler_key_parameter_name  = var.fx_exact_settler_key_parameter_name != null ? var.fx_exact_settler_key_parameter_name : ""
+    fx_base_sepolia_rpc_parameter_name   = var.fx_base_sepolia_rpc_parameter_name != null ? var.fx_base_sepolia_rpc_parameter_name : ""
     fx_avalanche_fuji_rpc_parameter_name = var.fx_avalanche_fuji_rpc_parameter_name != null ? var.fx_avalanche_fuji_rpc_parameter_name : ""
-    fx_deployment_id                       = var.fx_deployment_id
-    fx_waku_peers                          = var.fx_waku_peers
-    fx_observation_window_ms               = var.fx_observation_window_ms
-    fx_max_active_rfqs                     = var.fx_max_active_rfqs
-    fx_x402_requests_per_minute_per_ip     = var.fx_x402_requests_per_minute_per_ip
-    fx_max_concurrent_x402_requests        = var.fx_max_concurrent_x402_requests
-    fx_compose_profile                     = var.fx_broker_enabled ? "--profile fx-testnet" : ""
-    graduation_keeper_enabled              = var.graduation_keeper_enabled
-    graduation_keeper_key_parameter_name   = var.graduation_keeper_key_parameter_name != null ? var.graduation_keeper_key_parameter_name : ""
-    chain_id                               = var.chain_id
-    arena_address                          = var.arena_address
-    rain_start_block                       = var.rain_start_block
-    rain_poll_ms                           = var.rain_poll_ms
-    rain_confirmations                     = var.rain_confirmations
-    rain_distribution_ms                   = var.rain_distribution_ms
-    rpc_daily_credit_budget                = var.rpc_daily_credit_budget
-    rpc_credits_per_second                 = var.rpc_credits_per_second
-    graduation_submission_delay_ms         = var.graduation_submission_delay_ms
-    graduation_rebroadcast_ms              = var.graduation_rebroadcast_ms
-    graduation_max_gas_limit               = var.graduation_max_gas_limit
-    graduation_max_execution_fee_wei       = var.graduation_max_execution_fee_wei
-    static_peer                            = var.static_peer
-    repository_url                         = var.repository_url
-    repository_ref                         = var.repository_ref
-    store_seconds                          = var.store_seconds
-    store_capacity                         = var.store_capacity
-    store_size                             = var.store_size
+    fx_deployment_id                     = var.fx_deployment_id
+    fx_waku_peers                        = var.fx_waku_peers
+    fx_observation_window_ms             = var.fx_observation_window_ms
+    fx_max_active_rfqs                   = var.fx_max_active_rfqs
+    fx_x402_requests_per_minute_per_ip   = var.fx_x402_requests_per_minute_per_ip
+    fx_max_concurrent_x402_requests      = var.fx_max_concurrent_x402_requests
+    fx_compose_profile                   = var.fx_broker_enabled ? "--profile fx-testnet" : ""
+    graduation_keeper_enabled            = var.graduation_keeper_enabled
+    graduation_keeper_key_parameter_name = var.graduation_keeper_key_parameter_name != null ? var.graduation_keeper_key_parameter_name : ""
+    chain_id                             = var.chain_id
+    arena_address                        = var.arena_address
+    rain_start_block                     = var.rain_start_block
+    rain_poll_ms                         = var.rain_poll_ms
+    rain_confirmations                   = var.rain_confirmations
+    rain_distribution_ms                 = var.rain_distribution_ms
+    rpc_daily_credit_budget              = var.rpc_daily_credit_budget
+    rpc_credits_per_second               = var.rpc_credits_per_second
+    graduation_submission_delay_ms       = var.graduation_submission_delay_ms
+    graduation_rebroadcast_ms            = var.graduation_rebroadcast_ms
+    graduation_max_gas_limit             = var.graduation_max_gas_limit
+    graduation_max_execution_fee_wei     = var.graduation_max_execution_fee_wei
+    static_peer                          = var.static_peer
+    repository_url                       = var.repository_url
+    repository_ref                       = var.repository_ref
+    store_seconds                        = var.store_seconds
+    store_capacity                       = var.store_capacity
+    store_size                           = var.store_size
   })
 
   depends_on = [aws_route_table_association.public]
@@ -250,6 +258,14 @@ resource "aws_route53_record" "relay" {
   type    = "A"
   ttl     = 60
   records = [aws_eip.relay.public_ip]
+}
+
+resource "aws_route53_record" "relay_ipv6" {
+  zone_id = var.hosted_zone_id
+  name    = var.domain
+  type    = "AAAA"
+  ttl     = 60
+  records = aws_instance.relay.ipv6_addresses
 }
 
 resource "aws_sns_topic" "alarms" {

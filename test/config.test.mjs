@@ -85,12 +85,16 @@ test("graduation keeper is opt-in and cannot reuse the rain attestor", () => {
 });
 
 test("bootstrap address is deterministic from domain and peer ID", () => {
-  assert.equal(publicWssMultiaddr(valid, "peer"), "/dns4/relay-a.versus.example/tcp/443/wss/p2p/peer");
+  assert.equal(publicWssMultiaddr(valid, "peer"), "/dns/relay-a.versus.example/tcp/443/wss/p2p/peer");
 });
 
 test("deployment keeps stock nwaku and all operator APIs host-only", () => {
   const compose = fs.readFileSync(path.join(ROOT, "deploy", "docker-compose.yml"), "utf8");
   const caddy = fs.readFileSync(path.join(ROOT, "deploy", "Caddyfile"), "utf8");
+  const terraform = fs.readFileSync(
+    path.join(ROOT, "infra", "aws", "modules", "relay-host", "main.tf"),
+    "utf8",
+  );
   assert.match(compose, /wakuorg\/nwaku:v0\.38\.1/);
   const nwaku = compose.slice(compose.indexOf("  nwaku:"), compose.indexOf("  caddy:"));
   assert.doesNotMatch(nwaku, /^\s*build:/m);
@@ -100,6 +104,7 @@ test("deployment keeps stock nwaku and all operator APIs host-only", () => {
   assert.match(compose, /--store-message-retention-policy=time:/);
   assert.match(compose, /--max-msg-size=32KiB/);
   assert.match(compose, /--staticnode=/);
+  assert.match(compose, /--ext-multiaddr=\/dns\/\$\{PUBLIC_DOMAIN/);
   assert.match(compose, /VERSUS_RPC_DAILY_CREDIT_BUDGET/);
   assert.match(compose, /VERSUS_HATCH_QUOTE_REFRESH_MS/);
   assert.match(compose, /VERSUS_CLASS_STATE_REFRESH_MS/);
@@ -110,4 +115,9 @@ test("deployment keeps stock nwaku and all operator APIs host-only", () => {
   assert.match(caddy, /handle \/v1\/class-state[\s\S]*reverse_proxy versus-node:8787/);
   assert.match(caddy, /handle \/v1\/fx\/prices[\s\S]*reverse_proxy versus-node:8787/);
   assert.doesNotMatch(caddy, /handle \/(?:health|metrics)(?:\s|\{)/);
+  assert.match(terraform, /assign_generated_ipv6_cidr_block\s*=\s*true/);
+  assert.match(terraform, /assign_ipv6_address_on_creation\s*=\s*true/);
+  assert.match(terraform, /ipv6_cidr_block\s*=\s*"::\/0"/);
+  assert.match(terraform, /ipv6_address_count\s*=\s*1/);
+  assert.match(terraform, /resource "aws_route53_record" "relay_ipv6"/);
 });
